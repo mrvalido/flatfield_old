@@ -68,8 +68,28 @@ int main(){
 		iMin = datacube[i].min();
 		iMax = datacube[i].max();
 
-		getImages(datacube[i], tmp, iMin+100, iMax-500, 0);
+		getImages(datacube[i], tmp, iMin+100, iMax-500, i);
+	//************************************************************
+//		//ImageValChar im8 = escalado8(datacube[i]);
+//		cout << "MAX: "  <<  (int)tmp.max() << endl;
+//		Mat im(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+//
+//		//Se pone primero el eje Y y despues el eje X
+//		for (long y=0; y<dimY; y++){
+//			for (long x=0; x<dimX; x++){
+//				im.at<uchar>(y,x) = (uchar)(tmp[ind( y, x )]*255);
+//			}
+//		}
+//
+//
+//	//	imwrite("msk.jpeg", im);
+//		namedWindow( "Display window", WINDOW_NORMAL);// Create a window for display.
+//		imshow( "Display window", im );
+//
+//		//************************************************************
+
 	}
+
 
 
 	ImageValDouble pixCnt(datacube[0].size());
@@ -110,7 +130,7 @@ int main(){
 //	namedWindow( "Display window 2", WINDOW_NORMAL );// Create a window for display.
 //	imshow( "Display window 2", im2 );
 
-	waitKey(0);
+	//waitKey(0);
 	//imageVal.showImageMat();
 
 

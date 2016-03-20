@@ -30,6 +30,7 @@ using namespace CCfits;
 ImageValInt readImageFit(string nombreImagen);
 void getImages(ImageValInt& data, ImageValChar& tmp,  const int iMin, const int iMax, int index);
 ImageValChar escalado8(ImageValDouble& val);
+ImageValChar escalado8(const ImageValInt& val);
 int* desplazamientos(int centros[8][2], int imagenQ, int imagenR);
 template <typename T>
 ImageValDouble ROI(const valarray<T>& val, int dx, int dy);

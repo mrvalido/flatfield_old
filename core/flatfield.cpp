@@ -2,6 +2,9 @@
 #include "utility.hpp"
 
 
+int Alto;
+int Ancho;
+
 ImageValInt readImageFit(string nombreImagen){
 
 	std::auto_ptr<FITS> pInfile(new FITS(nombreImagen,Read,true));
@@ -41,6 +44,9 @@ void getImages(ImageValInt& data, \
 		}
 	}
 
+
+
+
 	// Guardar la mascara del indezx i en la plantilla de pixeles buenos tmp
 	tmp = tmp | (msk * (unsigned char)(1 << index));
 
@@ -58,6 +64,19 @@ ImageValChar escalado8(ImageValDouble& val){
 
 	for(int i = 0; i < size_val; i++){
 		temp[i] = (unsigned char) (( (double)(val[i])/(double)mx ) * 255.0);
+	}
+
+	return temp;
+}
+////*************************************************************************************
+ImageValChar escalado8(const ImageValInt& val){
+	int size_val = val.size();
+	ImageValChar temp(size_val);
+
+	unsigned int mx = val.max();
+
+	for(int i = 0; i < size_val; i++){
+		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
 	}
 
 	return temp;
@@ -81,21 +100,33 @@ template <typename T>
 ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 
 	// Calculo de los extremos de las ventanas
-	unsigned int jyl = max(0, -dy), jyh = min(0, -dy) + dimY; // FILAS
-	unsigned int jxl = max(0, -dx), jxh = min(0, -dx) + dimX; // COLUMNAS
+	unsigned int jyl = max(0, -dy);// FILAS
+	unsigned int jyh = min(0, -dy) + dimY; // FILAS
+	unsigned int jxl = max(0, -dx); // COLUMNAS
+	unsigned int jxh = min(0, -dx) + dimX; // COLUMNAS
+
 //	unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + dimY; // FILAS
 //	unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + dimX; // COLUMNAS
 
-	cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
+	//cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
 
-	int ancho = (jxl-jxh);
-	ImageValDouble ROI((jyl-jyh) * (jxl-jxh));
+	int ancho = (int)(jxh-jxl);
+	int alto  = (int)(jyh-jyl);
+	//Alt= (jxl-jxh);
+	//cout << "Anch : "  <<  ancho << "    " << abs(ancho) << endl;
+	//cout << " Alto: "  <<  alto << "    " << abs(alto) << endl;
+    Ancho=ancho;
+
+    Alto=alto;
+	ImageValDouble ROI((jyh-jyl) * (jxh-jxl));
+
+	cout << " Alto: "  <<  ancho << "    " << alto << "    " << ancho*alto << "   "<< ROI.size()<< endl;
 
 	// Calcular ventanas de mascara. MskiqROI y mskirROI son del mismo tamaño, aunque
 	//estan desplazadas unas con respecto a la otra una distancia relativa.
-	for(int y=jyh; y <= jyl; y++){
-		for(int x=jxh; x <= jxl; x++){
-			ROI[(y-jyh)*ancho + (x-jxh)] = (double)val[ind(y,x)];
+	for(int y=jyl; y < jyh; y++){
+		for(int x=jxl; x < jxh; x++){
+			ROI[(y-jyl)*ancho + (x-jxl)] = (double)val[ind(y,x)];
 		}
 	}
 
@@ -110,16 +141,16 @@ void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy){
 	unsigned int jxl = max(0, -dx), jxh = min(0, -dx) + dimX; // COLUMNAS
 
 
-	int ancho = (jxl-jxh);
+	int ancho = abs((int)(jxh-jxl));
 
-	for(int y=jyh; y <= jyl; y++){
-		for(int x=jxh; x <= jxl; x++){
-			 val[ind(y,x)] = ROI[(y-jyh)*ancho + (x-jxh)];
+	for(int y=jyl; y < jyh; y++){
+		for(int x=jxl; x < jxh; x++){
+			 val[ind(y,x)] = ROI[(y-jyl)*ancho + (x-jxl)];
 		}
 	}
 }
 
-ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, ImageValDouble& pixCnt, int centros[8][2]) {
+ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, ImageValDouble& pixCnt, const int centros[8][2]) {
 
 	vector<ImageValDouble> dat;
 	ImageValDouble con(data[0].size());
@@ -127,7 +158,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 	// Calculo del logaritmo comun (base 10) de la imagen
 	dat.push_back(log_10(data[0]));
 
-	for(unsigned int iq = 1; iq < 2; iq++) {
+	for(unsigned int iq = 1; iq < 8; iq++) {
 
 		// Calculo del logaritmo comun (base 10) de la imagen
 		dat.push_back(log_10(data[iq]));
@@ -149,6 +180,37 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 			ImageValDouble datiqROI = ROI(dat[iq], desp[0], desp[1]);
 			ImageValDouble datirROI = ROI(dat[ir], -desp[0], -desp[1]);
+
+
+
+			Mat im(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+
+				//Se pone primero el eje Y y despues el eje X
+				for (long y=0; y<dimY; y++){
+						for (long x=0; x<dimX; x++){
+						im.at<uchar>(y,x) = (uchar)(mskir[ind( y, x )]*100);
+					}
+				}
+
+
+//			ImageValChar im8 = escalado8(datiqROI);
+
+//				Mat im(Alto, Ancho, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+//
+//				//Se pone primero el eje Y y despues el eje X
+//				for (long y=0; y<Alto; y++){
+//						for (long x=0; x<Ancho; x++){
+//						im.at<uchar>(y,x) = (uchar)(mskir[y*Ancho+x]);
+//					}
+//				}
+
+
+				imwrite("msk.jpeg", im);
+				namedWindow( "Display window", WINDOW_NORMAL);// Create a window for display.
+				imshow( "Display window", im );
+
+				//waitKey(0);
+
 
 			ImageValDouble diff = (datiqROI - datirROI)*(mskDouble);
 
@@ -179,3 +241,108 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 	return con;
 
 }
+
+//********************************************************
+
+void doIteration(const imageValDouble& con, \
+		imageValDouble& gain, \
+                 const imageValChar& tmp, \
+                 const imageValDouble& pixCnt, \
+                 const int centros[8][2]) {
+
+	unsigned int loopCnt = 0;
+
+	// Creacion de la ganancia temporal
+//	Mat gainTmp;
+//	con.copyTo(gainTmp);
+	ImageValDouble gainTmp(con.size());
+
+	for(unsigned int iq = 1; iq < 8; iq++) {
+
+		// Obtencion de la mascara
+		ImageValChar mskiq = (tmp & (1 << iq)) / (1 << iq);
+
+		for(unsigned int ir = 0; ir < iq; ir++) {
+
+			// Obtencion de la mascara
+			ImageValChar mskir = (tmp & (1 << ir)) / (1 << ir);
+
+			// Calcula de los desplazamientos relativos
+			int dx = disp[iq][0] - disp[ir][0];
+			int dy = disp[iq][1] - disp[ir][1];
+			int*  desp = desplazamientos(centros, iq, ir);
+//			// Calculo de los extremos de las ventanas
+//			unsigned int jyl = max(0, -dy), jyh = min(0, -dy) + con.rows; // FILAS
+//			unsigned int jxl = max(0, -dx), jxh = min(0, -dx) + con.cols; // COLUMNAS
+//			unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + con.rows; // FILAS
+//			unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + con.cols; // COLUMNAS
+
+			// Calcular ventanas de mascara
+			//Mat mskiqROI(mskiq, Range(jyl, jyh), Range(jxl, jxh));
+			//Mat mskirROI(mskir, Range(iyl, iyh), Range(ixl, ixh));
+			ImageValDouble mskiqROI = ROI(mskiq, desp[0], desp[1]);
+			ImageValDouble mskirROI = ROI(mskir, -desp[0], -desp[1]);
+
+			ImageValDouble mskDouble = mskiqROI * mskirROI;
+
+
+			// Calcular la mascara de las ventanas
+			Mat msk = mskiqROI.mul(mskirROI);
+			msk.convertTo(msk, CV_64F);
+
+			// Calcular ventanas de ganancia y ganancia temporal
+			ImageValDouble gainTmpJROI=ROI(gainTmp, desp[0], desp[1]);
+			ImageValDouble gainTmpIROI=ROI(gainTmp, -desp[0], -desp[1]);
+			ImageValDouble gainJROI=ROI(gain, desp[0], desp[1]);
+			ImageValDouble gainIROI=ROI(gain, -desp[0], -desp[1]);
+
+			// Modificar la ganancia temporal en base a la ganancia y la mascara
+			gainTmpJROI = gainTmpJROI + gainIROI*mskDouble;
+			gainTmpIROI = gainTmpIROI + gainJROI*mskDouble;
+
+#ifdef PROGRESS
+
+			cout << "doItera : Iteración " << ++loopCnt << " de 28..." << endl;
+
+#endif
+
+		}
+
+	}
+
+	// Calcular ganancia unitaria
+	Mat pixCntAux = max(pixCnt, 1.0);
+	pixCntAux.convertTo(pixCntAux, CV_64F);
+	gainTmp = gainTmp / pixCntAux;
+
+	// Eliminar elementos a cero (de la matriz de pares de pixeles)
+	Mat index = min(pixCnt, 1.0);
+	index.convertTo(index, CV_64F);
+
+	gainTmp = gainTmp.mul(index);
+
+	// Calcular sumatorios
+	double sum2 = sum(gainTmp)[0];
+	double sum3 = sum(gainTmp.mul(gainTmp))[0];
+	double nPix = sum(index)[0];
+
+	// Eliminar elementos mas de 5-Sigma veces alejados de la media
+	double ave2 = sum2 / nPix;
+	double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
+
+	index = (abs(gainTmp - ave2) > fiveSigma) / 255;
+	index.convertTo(index, CV_64F);
+
+	sum2 = sum2 - sum(gainTmp.mul(index))[0];
+	nPix = nPix - sum(index)[0];
+
+	// Normalizar la tabla de ganancias
+	ave2 = sum2 / nPix;
+
+	gainTmp = gainTmp - ave2;
+
+	// Devolver la tabla de ganancias
+	gain = gainTmp;
+
+}
+
