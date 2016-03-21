@@ -4,17 +4,14 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../core/borrar.cpp \
 ../core/flatfield.cpp \
 ../core/utility.cpp 
 
 OBJS += \
-./core/borrar.o \
 ./core/flatfield.o \
 ./core/utility.o 
 
 CPP_DEPS += \
-./core/borrar.d \
 ./core/flatfield.d \
 ./core/utility.d 
 

@@ -18,22 +18,65 @@ ImageValDouble log_10(ImageValInt val){
 	return tmp;
 }
 
-Mat to16U(const Mat& matrix) {
+ImageValDouble Max(const ImageValDouble& val,double x){
+	int size_val = val.size();
+	ImageValDouble tmp(size_val);
+	tmp=val;
 
-	Mat ret;
-	matrix.copyTo(ret);
 
-	double vMin, vMax;
+	for(int i=0; i < size_val; i++){
 
-	minMaxLoc(ret, &vMin, &vMax, NULL, NULL);
-	ret += abs(vMin);
+		if (val[i] < x)
+			tmp[i]=x;
 
-	minMaxLoc(ret, &vMin, &vMax, NULL, NULL);
-	ret /= vMax;
-	ret *= 65535;
+	}
+	return tmp;
+}
 
-	ret.convertTo(ret, CV_16UC1);
+ImageValDouble Min(const ImageValDouble& val,double x){
+	int size_val = val.size();
+	ImageValDouble tmp(size_val);
+	tmp=val;
 
+
+	for(int i=0; i < size_val; i++){
+
+		if (val[i]  >= x)
+			tmp[i]=x;
+		else
+			tmp[i]=val[i];
+
+	}
+	return tmp;
+}
+
+
+ImageValDouble toDouble(const ImageValChar& val) {
+
+	int size_val = val.size();
+	ImageValDouble ret(size_val);
+	for(int i=0; i < size_val; i++){
+		ret[i]=(double)val[i];
+	}
 	return ret;
 
 }
+//Mat to16U(const Mat& matrix) {
+//
+//	Mat ret;
+//	matrix.copyTo(ret);
+//
+//	double vMin, vMax;
+//
+//	minMaxLoc(ret, &vMin, &vMax, NULL, NULL);
+//	ret += abs(vMin);
+//
+//	minMaxLoc(ret, &vMin, &vMax, NULL, NULL);
+//	ret /= vMax;
+//	ret *= 65535;
+//
+//	ret.convertTo(ret, CV_16UC1);
+//
+//	return ret;
+//
+//}

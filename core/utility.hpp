@@ -1,11 +1,11 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
 #include <algorithm>
 #include <valarray>
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 typedef valarray<unsigned int>   ImageValInt;
@@ -17,7 +17,10 @@ typedef valarray<double>		 ImageValDouble;
 
 
 ImageValDouble log_10(ImageValInt val);
+ImageValDouble Max(const ImageValDouble& val,double x);
+ImageValDouble Min(const ImageValDouble& val,double x);
+ImageValDouble toDouble(const ImageValChar& val);
 
-Mat to16U(const Mat&);
+//Mat to16U(const Mat&);
 
 #endif
