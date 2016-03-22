@@ -145,9 +145,10 @@ void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy){
 	}
 }
 
-ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, ImageValDouble& pixCnt, const int centros[8][2]) {
+ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, ImageValDouble& pixCnt, int centros[8][2]) {
 
 	vector<ImageValDouble> dat;
+
 
 	ImageValDouble con(data[0].size());
 
@@ -210,160 +211,160 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 //********************************************************
 
-//void doIteration(const ImageValDouble& con,\
-//		ImageValDouble& gain,\
-//		const ImageValChar& tmp,\
-//		const ImageValDouble& pixCnt,\
-//		const int centros[8][2]) {
-//
-//
-//
-//	//unsigned int loopCnt = 0;
-//
-//	// Creacion de la ganancia temporal
-////	Mat gainTmp;
-////	con.copyTo(gainTmp);
-//
-//
-//	ImageValDouble gainTmp(con.size());
-//
-//	for(unsigned int iq = 1; iq < 8; iq++) {
-//
-//		// Obtencion de la mascara
-//		ImageValChar mskiq = (tmp & (1 << iq)) / (1 << iq);
-//
-//		for(unsigned int ir = 0; ir < iq; ir++) {
-//
-//			// Obtencion de la mascara
-//			ImageValChar mskir = (tmp & (1 << ir)) / (1 << ir);
-//
-//			// Calcula de los desplazamientos relativos
-//		//	int dx = disp[iq][0] - disp[ir][0];
-//			//int dy = disp[iq][1] - disp[ir][1];
-//			int*  desp = desplazamientos(centros, iq, ir);
-////			// Calculo de los extremos de las ventanas
-////			unsigned int jyl = max(0, -dy), jyh = min(0, -dy) + con.rows; // FILAS
-////			unsigned int jxl = max(0, -dx), jxh = min(0, -dx) + con.cols; // COLUMNAS
-////			unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + con.rows; // FILAS
-////			unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + con.cols; // COLUMNAS
-//
-//			// Calcular ventanas de mascara
-//			//Mat mskiqROI(mskiq, Range(jyl, jyh), Range(jxl, jxh));
-//			//Mat mskirROI(mskir, Range(iyl, iyh), Range(ixl, ixh));
-//			ImageValDouble mskiqROI = ROI(mskiq, desp[0], desp[1]);
-//			ImageValDouble mskirROI = ROI(mskir, -desp[0], -desp[1]);
-//
-//			// Calcular la mascara de las ventanas
-//			ImageValDouble mskDouble = mskiqROI * mskirROI;
-//
-//
-//
-////			Mat msk = mskiqROI.mul(mskirROI);
-////			msk.convertTo(msk, CV_64F);
-//
-//			// Calcular ventanas de ganancia y ganancia temporal
-//			ImageValDouble gainTmpJROI=ROI(gainTmp, desp[0], desp[1]);
-//			ImageValDouble gainTmpIROI=ROI(gainTmp, -desp[0], -desp[1]);
-//			ImageValDouble gainJROI=ROI(gain, desp[0], desp[1]);
-//			ImageValDouble gainIROI=ROI(gain, -desp[0], -desp[1]);
-//
-//			// Modificar la ganancia temporal en base a la ganancia y la mascara
-//			gainTmpJROI = gainTmpJROI + gainIROI*mskDouble;
-//			gainTmpIROI = gainTmpIROI + gainJROI*mskDouble;
-//
-//#ifdef PROGRESS
-//
-//			cout << "doItera : Iteración " << ++loopCnt << " de 28..." << endl;
-//
-//#endif
-//
-//		}
-//
-//	}
-//
-////	// Calcular ganancia unitaria
-////	ImageValDouble pixCntAux=pixCnt;
-////	//Mat pixCntAux = max(pixCnt, 1.0);
-////	//pixCntAux.convertTo(pixCntAux, CV_64F);
-////	pixCntAux = Max(pixCnt,1);
-////	gainTmp = gainTmp / pixCntAux;
-////
-////	// Eliminar elementos a cero (de la matriz de pares de pixeles)
-//////	Mat index = min(pixCnt, 1.0);
-//////	index.convertTo(index, CV_64F);
-////
-////    ImageValDouble index=Min(pixCnt,1);
-////	//gainTmp = gainTmp.mul(index);
-////    gainTmp=gainTmp*index;
-////    ImageValDouble TMP;
-////    TMP=gainTmp*gainTmp;
-////
-////	// Calcular sumatorios
-////
-////    double sum2=gainTmp.sum();
-////    double sum3=TMP.sum();
-////    double nPix=index.sum();
-////	//double sum2 = sum(gainTmp);
-////	//double sum3 = sum(gainTmp.mul(gainTmp))[0];
-////	//double nPix = sum(index)[0];
-////
-////	// Eliminar elementos mas de 5-Sigma veces alejados de la media
-////	double ave2 = sum2 / nPix;
-////	double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
-////
-////	index = (abs(gainTmp - ave2) > fiveSigma) / 255;
-////	//index.convertTo(index, CV_64F);
-////    TMP=gainTmp*index;
-////    sum2=sum2-TMP.sum();
-////    nPix=nPix-index.sum();
-////	//sum2 = sum2 - sum(gainTmp.mul(index))[0];
-////	//nPix = nPix - sum(index)[0];
-////
-////	// Normalizar la tabla de ganancias
-////	ave2 = sum2 / nPix;
-////
-////	gainTmp = gainTmp - ave2;
-////
-////	// Devolver la tabla de ganancias
-////	gain = gainTmp;
-//
-//}
+void doIteration(const ImageValDouble& con,\
+		ImageValDouble& gain,\
+		const ImageValChar& tmp,\
+		const ImageValDouble& pixCnt,\
+		int centros[8][2]) {
 
 
-//ImageValDouble iterate(const ImageValDouble& con, \
-//		ImageValDouble& gain, \
-//            const ImageValChar& tmp, \
-//            const ImageValDouble& pixCnt, \
-//            const int centros[8][2], \
-//			const unsigned int loops) {
+
+	//unsigned int loopCnt = 0;
+
+	// Creacion de la ganancia temporal
+//	Mat gainTmp;
+//	con.copyTo(gainTmp);
+
+
+	ImageValDouble gainTmp(con.size());
+
+	for(unsigned int iq = 1; iq < 8; iq++) {
+
+		// Obtencion de la mascara
+		ImageValChar mskiq = (tmp & (1 << iq)) / (1 << iq);
+
+		for(unsigned int ir = 0; ir < iq; ir++) {
+
+			// Obtencion de la mascara
+			ImageValChar mskir = (tmp & (1 << ir)) / (1 << ir);
+
+			// Calcula de los desplazamientos relativos
+		//	int dx = disp[iq][0] - disp[ir][0];
+			//int dy = disp[iq][1] - disp[ir][1];
+			int*  desp = desplazamientos(centros, iq, ir);
+//			// Calculo de los extremos de las ventanas
+//			unsigned int jyl = max(0, -dy), jyh = min(0, -dy) + con.rows; // FILAS
+//			unsigned int jxl = max(0, -dx), jxh = min(0, -dx) + con.cols; // COLUMNAS
+//			unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + con.rows; // FILAS
+//			unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + con.cols; // COLUMNAS
+
+			// Calcular ventanas de mascara
+			//Mat mskiqROI(mskiq, Range(jyl, jyh), Range(jxl, jxh));
+			//Mat mskirROI(mskir, Range(iyl, iyh), Range(ixl, ixh));
+			ImageValDouble mskiqROI = ROI(mskiq, desp[0], desp[1]);
+			ImageValDouble mskirROI = ROI(mskir, -desp[0], -desp[1]);
+
+			// Calcular la mascara de las ventanas
+			ImageValDouble mskDouble = mskiqROI * mskirROI;
+
+
+
+//			Mat msk = mskiqROI.mul(mskirROI);
+//			msk.convertTo(msk, CV_64F);
+
+			// Calcular ventanas de ganancia y ganancia temporal
+			ImageValDouble gainTmpJROI=ROI(gainTmp, desp[0], desp[1]);
+			ImageValDouble gainTmpIROI=ROI(gainTmp, -desp[0], -desp[1]);
+			ImageValDouble gainJROI=ROI(gain, desp[0], desp[1]);
+			ImageValDouble gainIROI=ROI(gain, -desp[0], -desp[1]);
+
+			// Modificar la ganancia temporal en base a la ganancia y la mascara
+			gainTmpJROI = gainTmpJROI + gainIROI*mskDouble;
+			gainTmpIROI = gainTmpIROI + gainJROI*mskDouble;
+
+#ifdef PROGRESS
+
+			cout << "doItera : Iteración " << ++loopCnt << " de 28..." << endl;
+
+#endif
+
+		}
+
+	}
+
+	// Calcular ganancia unitaria
+	ImageValDouble pixCntAux=pixCnt;
+	//Mat pixCntAux = max(pixCnt, 1.0);
+	//pixCntAux.convertTo(pixCntAux, CV_64F);
+	pixCntAux = Max(pixCnt,1);
+	gainTmp = gainTmp / pixCntAux;
+
+	// Eliminar elementos a cero (de la matriz de pares de pixeles)
+//	Mat index = min(pixCnt, 1.0);
+//	index.convertTo(index, CV_64F);
+
+    ImageValDouble index=Min(pixCnt,1);
+	//gainTmp = gainTmp.mul(index);
+    gainTmp=gainTmp*index;
+    ImageValDouble TMP;
+    TMP=gainTmp*gainTmp;
+
+	// Calcular sumatorios
+
+    double sum2=gainTmp.sum();
+    double sum3=TMP.sum();
+    double nPix=index.sum();
+	//double sum2 = sum(gainTmp);
+	//double sum3 = sum(gainTmp.mul(gainTmp))[0];
+	//double nPix = sum(index)[0];
+
+	// Eliminar elementos mas de 5-Sigma veces alejados de la media
+	double ave2 = sum2 / nPix;
+	double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
+
+	index = (abs(gainTmp - ave2) > fiveSigma) / 255;
+	//index.convertTo(index, CV_64F);
+    TMP=gainTmp*index;
+    sum2=sum2-TMP.sum();
+    nPix=nPix-index.sum();
+	//sum2 = sum2 - sum(gainTmp.mul(index))[0];
+	//nPix = nPix - sum(index)[0];
+
+	// Normalizar la tabla de ganancias
+	ave2 = sum2 / nPix;
+
+	gainTmp = gainTmp - ave2;
+
+	// Devolver la tabla de ganancias
+	gain = gainTmp;
+
+}
+
+
+ImageValDouble iterate(const ImageValDouble& con, \
+		ImageValDouble& gain, \
+            const ImageValChar& tmp, \
+            const ImageValDouble& pixCnt, \
+            int centros[8][2], \
+			const unsigned int loops) {
+
+
+
+	for(unsigned int i = 0; i < loops; i++) {
+
+		doIteration(con, gain, tmp, pixCnt,centros);
+
+#ifdef PROGRESS
+
+		cout << "iterate : Iteración " << i + 1 << " de " << loops << "..." << endl;
+
+#endif
+
+	}
+
+	// Calculo de la imagen de flatfield
+	ImageValDouble flat = gain * log(10.0);
+
+	flat=exp(flat);
 //
+	ImageValChar tmpAux;
+	//tmpAux = (tmp > 0) / 255;
+	//std::valarray<bool> comp =(tmp > 0)/255;
+//	tmpAux.convertTo(tmpAux, CV_64F);
 //
-//
-//	for(unsigned int i = 0; i < loops; i++) {
-//
-//		doIteration(con, gain, tmp, pixCnt,centros);
-//
-//#ifdef PROGRESS
-//
-//		cout << "iterate : Iteración " << i + 1 << " de " << loops << "..." << endl;
-//
-//#endif
-//
-//	}
-//
-//	// Calculo de la imagen de flatfield
-//	ImageValDouble flat = gain * log(10.0);
-//
-//	flat=exp(flat);
-////
-//	ImageValChar tmpAux;
-//	//tmpAux = (tmp > 0) / 255;
-//	//std::valarray<bool> comp =(tmp > 0)/255;
-////	tmpAux.convertTo(tmpAux, CV_64F);
-////
-//	flat = flat*toDouble(tmpAux);
-//
-//	return flat;
-//
-//}
+	flat = flat*toDouble(tmpAux);
+
+	return flat;
+
+}
 

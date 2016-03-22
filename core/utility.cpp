@@ -56,7 +56,7 @@ ImageValDouble toDouble(const ImageValChar& val) {
 	int size_val = val.size();
 	ImageValDouble ret(size_val);
 	for(int i=0; i < size_val; i++){
-		ret[i]=(double)val[i];
+		ret[i]=val[i];
 	}
 	return ret;
 

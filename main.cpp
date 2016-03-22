@@ -44,16 +44,16 @@ using namespace cv;
 
 int main(){
 
-//	int centros[8][2] = {
-//						{1316,991},
-//				 	    {1252,1201},
-//						{1056,1331},
-//						{808,1231},
-//						{682,1013},
-//						{802,801},
-//						{1032,731},
-//						{1292,851}
-//					   };
+	int centros[8][2] = {
+						{1316,991},
+				 	    {1252,1201},
+						{1056,1331},
+						{808,1231},
+						{682,1013},
+						{802,801},
+						{1032,731},
+						{1292,851}
+					   };
 
 
 	string nombreImagen;
@@ -76,11 +76,11 @@ int main(){
 
 
 
-	//ImageValDouble pixCnt(datacube[0].size());
+	ImageValDouble pixCnt(datacube[0].size());
 
-	//ImageValDouble con = getConst(datacube, tmp, pixCnt, centros);
+	ImageValDouble con = getConst(datacube, tmp, pixCnt, centros);
 
-	//cout << "MAX: "  <<  con.max() << "        " << pixCnt.max() << endl;
+	cout << "MAX: "  <<  con.max() << "        " << pixCnt.max() << endl;
 
 
 #ifdef DEBUG
@@ -121,7 +121,7 @@ int main(){
 
 	//ImageValDouble triow = log_10(datacube[0]);
 
-		ImageValChar im8 = escalado8(flat);
+		//ImageValChar im8 = escalado8(flat);
 
 		Mat im(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
 

@@ -1,7 +1,7 @@
 #ifndef FLATFIELD_HPP
 #define FLATFIELD_HPP
 
-//#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <vector>
 
@@ -22,7 +22,7 @@
 #define dimY					2048
 #define ind( y, x ) ( y*dimX+x )
 
-//using namespace cv;
+using namespace cv;
 using namespace std;
 using namespace CCfits;
 
@@ -39,20 +39,20 @@ void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy);
 ImageValDouble getConst(vector<ImageValInt>& data,
 		const ImageValChar& tmp,\
 		ImageValDouble& pixCnt,\
-		const int centros[8][2]);
+		int centros[8][2]);
 
-//void doIteration(const ImageValDouble& con,\
-//		ImageValDouble& gain,\
-//		const ImageValChar& tmp,\
-//		const ImageValDouble& pixCnt,\
-//		const int centros[8][2]);
-//
-//ImageValDouble iterate(const ImageValDouble& con, \
-//		ImageValDouble& gain, \
-//            const ImageValChar& tmp, \
-//            const ImageValDouble& pixCnt, \
-//            const int centros[8][2], \
-//			const unsigned int loops);
-//
+void doIteration(const ImageValDouble& con,\
+		ImageValDouble& gain,\
+		const ImageValChar& tmp,\
+		const ImageValDouble& pixCnt,\
+		int centros[8][2]);
+
+ImageValDouble iterate(const ImageValDouble& con, \
+		ImageValDouble& gain, \
+            const ImageValChar& tmp, \
+            const ImageValDouble& pixCnt, \
+            int centros[8][2], \
+			const unsigned int loops);
+
 
 #endif

@@ -1,11 +1,11 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
-//#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
 #include <algorithm>
 #include <valarray>
-//using namespace cv;
+using namespace cv;
 using namespace std;
 
 typedef valarray<unsigned int>   ImageValInt;
