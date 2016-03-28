@@ -29,6 +29,8 @@ using namespace CCfits;
 
 ImageValInt readImageFit(string nombreImagen);
 void getImages(ImageValInt& data, ImageValChar& tmp,  const int iMin, const int iMax, int index);
+template <typename TT>
+void pinta(valarray<TT>& val,int Dy,int Dx, int indice);
 ImageValChar escalado8(ImageValDouble& val);
 ImageValChar escalado8(const ImageValInt& val);
 int* desplazamientos(const int centros[8][2], int imagenQ, int imagenR);
@@ -39,19 +41,19 @@ void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy);
 ImageValDouble getConst(vector<ImageValInt>& data,
 		const ImageValChar& tmp,\
 		ImageValDouble& pixCnt,\
-		int centros[8][2]);
+		const int disp[8][2]);
 
 void doIteration(const ImageValDouble& con,\
 		ImageValDouble& gain,\
 		const ImageValChar& tmp,\
 		const ImageValDouble& pixCnt,\
-		int centros[8][2]);
+		const int disp[8][2]);
 
 ImageValDouble iterate(const ImageValDouble& con, \
 		ImageValDouble& gain, \
             const ImageValChar& tmp, \
             const ImageValDouble& pixCnt, \
-            int centros[8][2], \
+            const int disp[8][2], \
 			const unsigned int loops);
 
 

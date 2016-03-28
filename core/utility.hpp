@@ -21,6 +21,6 @@ ImageValDouble Max(const ImageValDouble& val,double x);
 ImageValDouble Min(const ImageValDouble& val,double x);
 ImageValDouble toDouble(const ImageValChar& val);
 
-//Mat to16U(const Mat&);
+Mat to16U(const Mat&);
 
 #endif

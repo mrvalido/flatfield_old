@@ -29,6 +29,8 @@
 // to use the library either add -I$(ROOT)/include/CCfits or #include <CCfits/CCfits>
 // in the compilation target.
 
+#define DEBUG
+
 
 #define IMIN 30096.8
 #define IMAX 65535.0
@@ -44,16 +46,18 @@ using namespace cv;
 
 int main(){
 
-	int centros[8][2] = {
-						{1316,991},
-				 	    {1252,1201},
-						{1056,1331},
-						{808,1231},
-						{682,1013},
-						{802,801},
-						{1032,731},
-						{1292,851}
-					   };
+//	int centros[8][2] = {
+//						{1316,991},
+//				 	    {1252,1201},
+//						{1056,1331},
+//						{808,1231},
+//						{682,1013},
+//						{802,801},
+//						{1032,731},
+//						{1292,851}
+//					   };
+
+	const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
 
 
 	string nombreImagen;
@@ -70,92 +74,59 @@ int main(){
 		datacube.push_back(readImageFit(nombreImagen));
 		iMin = datacube[i].min();
 		iMax = datacube[i].max();
-		getImages(datacube[i], tmp, iMin+100, iMax-500, i);
+		getImages(datacube[i], tmp, IMIN, IMAX, i);
 
 	}
 
 
 
 	ImageValDouble pixCnt(datacube[0].size());
+	ImageValDouble con(datacube[0].size());
 
-	ImageValDouble con = getConst(datacube, tmp, pixCnt, centros);
-
-	cout << "MAX: "  <<  con.max() << "        " << pixCnt.max() << endl;
+	con = getConst(datacube, tmp, pixCnt, disp);
 
 
+	//pinta(con, dimX, dimX, 1);
+
+	cout << "MAX: "  <<  con.max() << "        " << pixCnt.min() << endl;
+
+	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
+		ImageValDouble gain = con / pixCntAux;
+
+		cout << "MAX y min: "  <<  gain.max() << "        " << pixCntAux.max() << endl;
+		ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 #ifdef DEBUG
 
-	//ImageValDouble triow = log_10(datacube[0]);
 
-		ImageValChar im8 = escalado8(con);
+		cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
+		cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
 
-		Mat im(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+		ImageValChar im8 = escalado8(flat);
 
-		//Se pone primero el eje Y y despues el eje X
+		Mat im(dimY, dimX, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+
+		//Se pone primero el eje Y y despues el eje XCV_64F
 		for (long y=0; y<dimY; y++){
 				for (long x=0; x<dimX; x++){
-				im.at<uchar>(y,x) = (uchar)(im8[ind( y, x )]);
+				im.at<uchar>(y,x) = im8[ind( y, x )];
 			}
 		}
 
-
-		//imwrite("msk.jpeg", con);
+	//Mat flat2 = to16U(im);
+	//imwrite("gain.jpg", flat2);
 	namedWindow("Constant term", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-	imshow("Constant term", im);
+	imshow("FLAT term", im);
 	waitKey(0);
 
 #endif
-	// Calculo de la ganancia unitaria
-//		ImageValDouble pixCntAux = Max(pixCnt, 1.0);
-	//	ImageValDouble gain = con / pixCntAux;
+//	//Calculo de la ganancia unitaria
+//	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
+//	ImageValDouble gain = con / pixCntAux;
 
 		// Calculo del flatfield
-		//ImageValDouble flat = iterate(con, gain, tmp, pixCnt, centros, LOOPS);
+
 
 	//	flat = to16U(flat);
-
-
-
-#ifdef DEBUG
-
-
-	//ImageValDouble triow = log_10(datacube[0]);
-
-		//ImageValChar im8 = escalado8(flat);
-
-		Mat im(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-
-		//Se pone primero el eje Y y despues el eje X
-		for (long y=0; y<dimY; y++){
-				for (long x=0; x<dimX; x++){
-				im.at<uchar>(y,x) = (uchar)(im8[ind( y, x )]);
-			}
-		}
-
-
-		//imwrite("msk.jpeg", im);
-	namedWindow("Constant term", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-	imshow("Flat Field", im);
-	waitKey(0);
-
-#endif
-
-
-//	Mat im2(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-//	//Se pone primero el eje Y y despues el eje X
-//	for (long y=0; y<dimY; y++){
-//		for (long x=0; x<dimX; x++){
-//			im2.at<uchar>(y,x) = (uchar)(open[ind( y, x )]);
-//		}
-//	}
-//
-//	namedWindow( "Display window 2", WINDOW_NORMAL );// Create a window for display.
-//	imshow( "Display window 2", im2 );
-
-	//waitKey(0);
-	//imageVal.showImageMat();
-
-
 	return 0;
 }
 
