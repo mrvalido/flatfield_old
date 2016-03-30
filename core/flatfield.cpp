@@ -56,13 +56,15 @@ ImageValChar escalado8(ImageValDouble& val){
 	int size_val = val.size();
 	ImageValChar temp(size_val);
 
-	double mx = val.max();
+	double mx ;
 	double min=val.min();
-
+	val=val-min;
+	mx=val.max();
+	val=val/mx;
 	//cout << "Maximo: " << mx << "          Minimo: " << min << endl;
 
 	for(int i = 0; i < size_val; i++){
-		temp[i] = (unsigned char) ( (val[i]+abs(min)/(mx+abs(min)) ) * 255.0);
+		temp[i] = (unsigned char) ( val[i] * 255.0);
 	}
 
 	return temp;
@@ -83,7 +85,6 @@ ImageValChar escalado8(ImageValDouble& val){
 
 ////*************************************************************************************
 ////*************************************************************************************
-
 
 int* desplazamientos(int centros[8][2], int imagenQ, int imagenR){
 	int* desp = new int[2]; //DY, DX Desplazamiento relativo de las dos imagenes Q y R
@@ -152,8 +153,8 @@ void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy){
 }
 template <typename TT>
 void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
-	Mat im(Dy, Dx, CV_64F, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-	cout << " Alto y TAMAÑO : "  <<  val.size() << "    " << Dx << endl;
+	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+
 
 	//Se pone primero el eje Y y despues el eje XCV_64F
 	for (int y=0; y<Dy; y++){
@@ -166,6 +167,7 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
 	char imageName[] = "imX.jpg";
 	imageName[2] = 48 + indice;
 	imwrite(imageName, im);
+
 	namedWindow("PINTA", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
 	imshow("PINTA", im);
 }
@@ -244,16 +246,6 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
 
-			//-----------------------------
-			//SOLO DEBUG!!
-//			ImageValChar valir(255,(int)(Alto*Ancho));
-//			sumROI(mascir, valir, -dx, -dy);
-//
-//			pinta(mascir,dimX,dimY, 2);
-//			waitKey(0);
-
-
-			//------------------------------
 
 
 
@@ -294,7 +286,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 	}
 
-	pinta(con,dimX, dimX,1);
+
 	return con;
 
 }
@@ -331,7 +323,7 @@ void doIteration(const ImageValDouble& con,\
 
 			// Calcula de los desplazamientos relativos
 			int dx = disp[iq][0] - disp[ir][0];
-						int dy = disp[iq][1] - disp[ir][1];
+			int dy = disp[iq][1] - disp[ir][1];
 
 			//int*  desp = desplazamientos(centros, iq, ir);
 
@@ -343,8 +335,15 @@ void doIteration(const ImageValDouble& con,\
 
 			// Calcular la mascara de las ventanas
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
+		//	cout << "GGGGGGGGGGGGGG" << mskDouble.min() << "  "<<mskDouble.max() <<endl;
+			//waitKey(0);
 
+//			 msk=(mskiq(jxl:jxh,jyl:jyh) and mskir(ixl:ixh,iyl:iyh))
 
+//			      gain_n(jxl:jxh,jyl:jyh) = gain_n(jxl:jxh,jyl:jyh) $
+//			                              + gain(ixl:ixh,iyl:iyh)*msk
+//			      gain_n(ixl:ixh,iyl:iyh) = gain_n (ixl:ixh,iyl:iyh) $
+//			                              + gain(jxl:jxh,jyl:jyh)*msk
 
 //			Mat msk = mskiqROI.mul(mskirROI);
 //			msk.convertTo(msk, CV_64F);
@@ -357,9 +356,10 @@ void doIteration(const ImageValDouble& con,\
 			ImageValDouble gainIROI=ROI(gain, -dx,-dy);
 
 			// Modificar la ganancia temporal en base a la ganancia y la mascara
-			gainTmpJROI = gainIROI*mskDouble;
+			gainTmpJROI = gainJROI*mskDouble;
 			sumROI(gainTmp, gainTmpJROI, dx, dy);
-			gainTmpIROI = gainJROI*mskDouble;
+
+			gainTmpIROI = gainIROI*mskDouble;
 			sumROI(gainTmp, gainTmpIROI, -dx,-dy);
 
 
@@ -375,19 +375,28 @@ void doIteration(const ImageValDouble& con,\
 	}
 
 	// Calcular ganancia unitaria
-	ImageValDouble pixCntAux=pixCnt;
+	ImageValDouble pixCntAux;
 	//Mat pixCntAux = max(pixCnt, 1.0);
 	//pixCntAux.convertTo(pixCntAux, CV_64F);
-	pixCntAux = Max(pixCnt,1);
+	pixCntAux = Max(pixCnt,1);//normalizo gainTmp
 	gainTmp = gainTmp / pixCntAux;
 
 	// Eliminar elementos a cero (de la matriz de pares de pixeles)
-//	Mat index = min(pixCnt, 1.0);
+//	Mat index = min(pixCnt, 1.0);/marco los pixeles que tiene contribucion para calcular la media
 //	index.convertTo(index, CV_64F);
 
-    ImageValDouble index=Min(pixCnt,1.0);
+    ImageValDouble ind=Min(pixCnt,1.0);
+
 	//gainTmp = gainTmp.mul(index);
-    gainTmp=gainTmp*index;
+    cout << "minimo GainTM  "<< gainTmp.min() <<"   "<< gainTmp.max() <<endl;
+    gainTmp=gainTmp*ind;
+    cout << "minimo ind  "<< ind.min() <<"   "<< ind.max() <<endl;
+    cout << "minimo GainTM2  "<< gainTmp.min() <<"   "<< gainTmp.max() <<endl;
+    //ImageValChar pix=escalado8(gainTmp);
+      //  cout  << "idex.........." << endl;
+        //pinta(pix,dimX,dimY,1);
+
+
     ImageValDouble TMP;
     TMP=gainTmp*gainTmp;
 
@@ -395,20 +404,25 @@ void doIteration(const ImageValDouble& con,\
 
     double sum2=gainTmp.sum();
     double sum3=TMP.sum();
-    double nPix=index.sum();
+    double nPix=ind.sum();
+    cout << "npix     "<< nPix <<  endl;
+    cout << " total "<< dimX*dimY <<endl;
+    //waitKey(0);
 	//double sum2 = sum(gainTmp);
 	//double sum3 = sum(gainTmp.mul(gainTmp))[0];
 	//double nPix = sum(index)[0];
 
 	// Eliminar elementos mas de 5-Sigma veces alejados de la media
 	double ave2 = sum2 / nPix;
+	cout<< "media   "<< ave2 << endl;
+
 	double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
 
-	index = (abs(gainTmp - ave2) > fiveSigma) / 255;
+	ind = (abs(gainTmp - ave2) > fiveSigma) / 255;
 	//index.convertTo(index, CV_64F);
-    TMP=gainTmp*index;
+    TMP=gainTmp*ind;
     sum2=sum2-TMP.sum();
-    nPix=nPix-index.sum();
+    nPix=nPix-ind.sum();
 	//sum2 = sum2 - sum(gainTmp.mul(index))[0];
 	//nPix = nPix - sum(index)[0];
 
@@ -419,7 +433,7 @@ void doIteration(const ImageValDouble& con,\
 
 	// Devolver la tabla de ganancias
 	gain = gainTmp;
-	cout << "paso por aqui" << endl;
+
 
 }
 
@@ -446,10 +460,11 @@ ImageValDouble iterate(const ImageValDouble& con, \
 	}
 
 	// Calculo de la imagen de flatfield
-	ImageValDouble flat = gain * log(10.0);
+	//ImageValDouble flat = gain * log(10.0);
+	ImageValDouble flat = pow(10.0,gain);
 	cout << "P1 " << endl;
 
-	flat=exp(flat);
+	//flat=exp(flat);
     cout << "P2 " << endl;
 	ImageValChar tmpAux;
 	tmpAux = (tmp > 0) / 255;

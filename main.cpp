@@ -32,8 +32,8 @@
 #define DEBUG
 
 
-#define IMIN 30096.8
-#define IMAX 65535.0
+#define IMIN 30096 //.8
+#define IMAX 65535 //.0
 #define LOOPS 10
 
 #include <opencv2/opencv.hpp>
@@ -41,6 +41,8 @@
 using namespace cv;
 
 
+
+void pinta2(ImageValChar& val,int Dy,int Dx, int indice);
 
 // The library is enclosed in a namespace.
 
@@ -91,42 +93,65 @@ int main(){
 	cout << "MAX: "  <<  con.max() << "        " << pixCnt.min() << endl;
 
 	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
-		ImageValDouble gain = con / pixCntAux;
+	cout << "minimo pxaux"<< pixCntAux.min() <<"   "<<pixCntAux.max() <<endl;
+	ImageValDouble gain = con / pixCntAux;
 
-		cout << "MAX y min: "  <<  gain.max() << "        " << pixCntAux.max() << endl;
-		ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
+
+	//ImageValChar pix=escalado8(pixCntAux);
+	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
+	//pinta2(pix,dimX, dimY,1);
+	//waitKey(0);
+	//cout<< "klsdflsfklskflskfs"<<endl;
+
+	cout << "MAX y min: "  <<  gain.max() << "        " << pixCntAux.max() << endl;
+	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 #ifdef DEBUG
 
 
-		cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
-		cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
+	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
+	cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
 
-		ImageValChar im8 = escalado8(flat);
 
-		Mat im(dimY, dimX, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
 
-		//Se pone primero el eje Y y despues el eje XCV_64F
-		for (long y=0; y<dimY; y++){
-				for (long x=0; x<dimX; x++){
-				im.at<uchar>(y,x) = im8[ind( y, x )];
-			}
-		}
-
-	//Mat flat2 = to16U(im);
-	//imwrite("gain.jpg", flat2);
-	namedWindow("Constant term", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-	imshow("FLAT term", im);
+	cout << "Pasadaaaaaaaaaaaaaaaaaaa: " << endl;
+	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
+	ImageValChar pix=escalado8(flat);
+	pinta2(pix,dimX, dimY,1);
 	waitKey(0);
 
-#endif
-//	//Calculo de la ganancia unitaria
-//	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
-//	ImageValDouble gain = con / pixCntAux;
 
-		// Calculo del flatfield
+#endif
+	//	//Calculo de la ganancia unitaria
+	//	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
+	//	ImageValDouble gain = con / pixCntAux;
+
+	// Calculo del flatfield
 
 
 	//	flat = to16U(flat);
 	return 0;
 }
+
+
+void pinta2(ImageValChar& val,int Dy,int Dx, int indice){
+
+	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+
+
+	//Se pone primero el eje Y y despues el eje XCV_64F
+	for (int y=0; y<Dy; y++){
+
+		for (int x=0; x<Dx; x++){
+			//cout << " y   x  : "  << y*Dx + x << "  " << x << endl;
+			im.at<uchar>(y,x) = val[y*Dx + x];
+		}
+	}
+	char imageName[] = "imX.jpg";
+	imageName[2] = 48 + indice;
+	imwrite(imageName, im);
+
+	namedWindow("PINTA", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
+	imshow("PINTA", im);
+}
+
 
