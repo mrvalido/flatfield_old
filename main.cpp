@@ -32,8 +32,8 @@
 #define DEBUG
 
 
-#define IMIN 30096 //.8
-#define IMAX 65535 //.0
+#define IMIN 0 //.8
+#define IMAX 82000 //.0
 #define LOOPS 10
 
 #include <opencv2/opencv.hpp>
@@ -47,8 +47,8 @@ void pinta2(ImageValChar& val,int Dy,int Dx, int indice);
 // The library is enclosed in a namespace.
 
 int main(){
-
-//	int centros[8][2] = {
+//(x,y)
+//	const int disp[8][2] = {
 //						{1316,991},
 //				 	    {1252,1201},
 //						{1056,1331},
@@ -59,65 +59,85 @@ int main(){
 //						{1292,851}
 //					   };
 
-	const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
 
+//	//disp al reves (y,x)
+//	const int disp[8][2] = {
+	//						{991,1316},//desplazo el origen de coordenadas aqui
+	//				 	    {1201,1252},
+	//						{1331,1056},
+	//						{1231,808},
+	//						{1013,682},
+	//						{801,802},
+	//						{731,1032},
+	//						{851,1292}
+//					   };
+
+//	const int disp[8][2] =	{{0, 0},//
+//							{210,-64},
+//							{340,-260},
+//							{240,-508},
+//							{22,-634,},
+//							{-190,-514},
+//							{-260,-284},
+//							{-140,-24}};//
+	const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
 
 	string nombreImagen;
 	char imageName[] = "./im/im0X.fits";
 	vector <ImageValInt> datacube;
 
-	int iMin,iMax;
+
 
 	ImageValChar tmp (dimX*dimY);
 	// Leer imagenes desde fichero, guardandolas en el vector de datos
 	for(unsigned int i = 0; i < 8; i++) {
+
 		imageName[8] = 49 + i;
 		nombreImagen = imageName;
-		datacube.push_back(readImageFit(nombreImagen));
-		iMin = datacube[i].min();
-		iMax = datacube[i].max();
-		getImages(datacube[i], tmp, IMIN, IMAX, i);
 
+		datacube.push_back(readImageFit(nombreImagen));
+
+		getImages(datacube[i], tmp, IMIN, IMAX, i);
 	}
 
 
 
-	ImageValDouble pixCnt(datacube[0].size());
-	ImageValDouble con(datacube[0].size());
+	ImageValDouble pixCnt(0.0, datacube[0].size());
+	ImageValDouble con(0.0, datacube[0].size());
 
 	con = getConst(datacube, tmp, pixCnt, disp);
 
 
 	//pinta(con, dimX, dimX, 1);
 
-	cout << "MAX: "  <<  con.max() << "        " << pixCnt.min() << endl;
-
-	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
-	cout << "minimo pxaux"<< pixCntAux.min() <<"   "<<pixCntAux.max() <<endl;
-	ImageValDouble gain = con / pixCntAux;
 
 
-	//ImageValChar pix=escalado8(pixCntAux);
+	ImageValDouble pixCntAux(0.0,dimX*dimY);
+	pixCntAux= Max(pixCnt, 1.0);
+	ImageValDouble gain(0.0,dimX*dimY);
+	gain= con / pixCntAux;
+		//cout << "minimo pxaux"<< (int) auxpix.min() <<"   "<< (int)pix.max() <<endl;
+	pixCntAux= Min(pixCnt, 1.0);
+	ImageValChar pix=escalado8(pixCntAux);
 	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
-	//pinta2(pix,dimX, dimY,1);
-	//waitKey(0);
+	pinta2(pix,dimX, dimY,4);
+	waitKey(0);
 	//cout<< "klsdflsfklskflskfs"<<endl;
 
-	cout << "MAX y min: "  <<  gain.max() << "        " << pixCntAux.max() << endl;
+
 	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 #ifdef DEBUG
 
 
 	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
-	cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
+	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
+
+ pix=escalado8(flat);
+			pinta2(pix,dimX, dimY,2);
+			waitKey(0);
 
 
 
-	cout << "Pasadaaaaaaaaaaaaaaaaaaa: " << endl;
-	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
-	ImageValChar pix=escalado8(flat);
-	pinta2(pix,dimX, dimY,1);
-	waitKey(0);
 
 
 #endif

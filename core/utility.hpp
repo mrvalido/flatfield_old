@@ -20,6 +20,7 @@ ImageValDouble log_10(ImageValInt val);
 ImageValDouble Max(const ImageValDouble& val,double x);
 ImageValDouble Min(const ImageValDouble& val,double x);
 ImageValDouble toDouble(const ImageValChar& val);
+ImageValDouble IntoDouble(const ImageValInt& val);
 
 Mat to16U(const Mat&);
 
