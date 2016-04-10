@@ -80,7 +80,11 @@ int main(){
 //							{-190,-514},
 //							{-260,-284},
 //							{-140,-24}};//
-	const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
+	const int disp[9][2]={{ 0,0},{-30,294},{180,230},{310, 34},{210,-214},{-8,-340},{-220,-220},{-290,10},{-170,270}};
+
+
+
+	//const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
 
 	string nombreImagen;
 	char imageName[] = "./im/im0X.fits";
@@ -88,13 +92,14 @@ int main(){
 
 
 
-	ImageValChar tmp (dimX*dimY);
+	ImageValShort tmp (dimX*dimY);
 	// Leer imagenes desde fichero, guardandolas en el vector de datos
-	for(unsigned int i = 0; i < 8; i++) {
 
-		imageName[8] = 49 + i;
+	for(unsigned int i = 0; i < 9; i++) {
+
+		imageName[8] = 48 + i;
 		nombreImagen = imageName;
-
+		//cout << "nombre"<< nombreImagen<< endl;
 		datacube.push_back(readImageFit(nombreImagen));
 
 		getImages(datacube[i], tmp, IMIN, IMAX, i);
@@ -118,12 +123,13 @@ int main(){
 	gain= con / pixCntAux;
 		//cout << "minimo pxaux"<< (int) auxpix.min() <<"   "<< (int)pix.max() <<endl;
 	pixCntAux= Min(pixCnt, 1.0);
-	ImageValChar pix=escalado8(pixCntAux);
+
+	ImageValChar pix=escalado8(gain);
 	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
 	pinta2(pix,dimX, dimY,4);
 	waitKey(0);
 	//cout<< "klsdflsfklskflskfs"<<endl;
-
+	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
 
 	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 #ifdef DEBUG

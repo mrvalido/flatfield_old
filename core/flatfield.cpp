@@ -24,6 +24,7 @@ ImageValInt readImageFit(string nombreImagen){
 
 	int size_val = contents.size();
 	ImageValInt im(size_val);
+
 	for(int i = 0; i < size_val; i++){
 		im[i] = contents[i];
 	}
@@ -31,7 +32,7 @@ ImageValInt readImageFit(string nombreImagen){
 }
 
 void getImages(ImageValInt& data, \
-              ImageValChar& tmp, \
+              ImageValShort& tmp, \
               const int iMin, \
               const int iMax,
 			  int index) {
@@ -40,14 +41,15 @@ void getImages(ImageValInt& data, \
 	int size_data = data.size();
 
 	// Calcular la plantilla de pixeles buenos
-	ImageValChar msk (size_data);
+	ImageValShort msk (size_data);
 	for(int i=0; i < size_data; i++){
 		if(data[i] > iMin && data[i] <= iMax){
 			msk[i] = 1;
 		}
 	}
+
 	// Guardar la mascara del indezx i en la plantilla de pixeles buenos tmp
-	tmp = tmp | (msk * (unsigned char)(1 << index));
+	tmp = tmp | (msk * (unsigned short)(1 << index));
 
 	// Emplear la mascara para cribar los pixeles malos
 	for(int i=0; i < size_data; i++){
@@ -74,18 +76,18 @@ ImageValChar escalado8(const ImageValDouble& val){
 	return temp;
 }
 ////*************************************************************************************
-//ImageValChar escalado8(const ImageValInt& val){
-//	int size_val = val.size();
-//	ImageValChar temp(size_val);
-//
-//	unsigned int mx = val.max();
-//
-//	for(int i = 0; i < size_val; i++){
-//		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
-//	}
-//
-//	return temp;
-//}
+ImageValChar escalado8(const ImageValShort& val){
+	int size_val = val.size();
+	ImageValChar temp(size_val);
+
+	unsigned int mx = val.max();
+
+	for(int i = 0; i < size_val; i++){
+		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
+	}
+
+	return temp;
+}
 
 ////*************************************************************************************
 ////*************************************************************************************
@@ -112,7 +114,7 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 //	unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + dimY; // FILAS
 //	unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + dimX; // COLUMNAS
 
-	cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
+//	cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
 
 	int ancho = (int)(jxh-jxl);
 	int alto  = (int)(jyh-jyl);
@@ -126,13 +128,13 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 
 	ImageValDouble ROI(ta);
 
-	cout << " ancho y alto : "  <<  ancho << "    " << alto << "    " << ancho*alto <<  endl;
+//	cout << " ancho y alto : "  <<  ancho << "    " << alto << "    " << ancho*alto <<  endl;
 
 	// Calcular ventanas de mascara. MskiqROI y mskirROI son del mismo tamaño, aunque
 	//estan desplazadas unas con respecto a la otra una distancia relativa.
 	for(int y=jyl; y < jyh; y++){
 		for(int x=jxl; x < jxh; x++){
-			ROI[(y-jyl)*ancho + (x-jxl)] = (double)val[ind(y,x)];
+			ROI[(y-jyl)*ancho + (x-jxl)] = (T)val[ind(y,x)];
 		}
 	}
 
@@ -140,7 +142,7 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 }
 
 template <typename T>
-void sumROI(valarray<T>& val, valarray<T>& ROI, int dx, int dy){
+void sumROI(valarray<T>& val, const valarray<T>& ROI, int dx, int dy){
 
 	// Calculo de los extremos de las ventanas
 	unsigned int jyl = max(0, -dy), jyh = min(0, -dy) + dimY; // FILAS
@@ -171,7 +173,6 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
 	char imageName[] = "imX.jpg";
 	imageName[2] = 48 + indice;
 	imwrite(imageName, im);
-
 	namedWindow("PINTA", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
 	imshow("PINTA", im);
 }
@@ -181,7 +182,7 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
    return (unsigned char)n;
 }
 
-ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, ImageValDouble& pixCnt, const int disp[8][2]) {
+ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, ImageValDouble& pixCnt, const int disp[9][2]) {
 
 	vector<ImageValDouble> dat;
 	ImageValDouble con(data[0].size());
@@ -197,7 +198,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
     int b;
     b=(int)a;
     cout << "bool to inter" << b+1 << endl;
-	for(unsigned int iq = 1; iq < 8; iq++) {
+	for(unsigned int iq = 1; iq < 9; iq++) {
 
 		// Calculo del logaritmo comun (base 10) de la imagen
 		dat.push_back(log_10(data[iq]));
@@ -205,12 +206,12 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 		//dat=log_10(data[iq]);
 
 		// Obtencion de la mascara
-		ImageValChar mskiq = (tmp & (1 << iq)) / (1 << iq);
+		ImageValShort mskiq = (tmp & (1 << iq)) / (1 << iq);
 
 		for(unsigned int ir = 0; ir < iq; ir++) {
 
 			// Obtencion de la mascara
-			ImageValChar mskir = (tmp & (1 << ir)) / (1 << ir);
+			ImageValShort mskir = (tmp & (1 << ir)) / (1 << ir);
 			//Desplazamientos
 			//int*  desp = desplazamientos(centros, iq, ir);
 			//cout << "maximo00  " << (int)mskiq.max() << endl;
@@ -219,73 +220,44 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 
 
-			int dx = (disp[iq][0] - disp[ir][0]);
-			int dy = (disp[iq][1] - disp[ir][1]);
+			int dy = (disp[iq][0] - disp[ir][0]);
+			int dx = (disp[iq][1] - disp[ir][1]);
 //
 
-			cout << "dx: " << dx << iq << endl;
-			cout << "dy: " << dy << ir << endl;
+		//	cout << "dx: " << dx << iq << endl;
+		//	cout << "dy: " << dy << ir << endl;
 
 
-			cout << "mascara iq: " << iq << endl;
 			//Calcula las regiones de interes de  las mascaras
-			ImageValDouble mskiqROI = ROI(mskiq, dx, dy);//dx y dy en este
-			cout << "mascara ir: " << ir << endl;
+			ImageValDouble mskiqROI(0.0,Alto*Ancho);
 
-			ImageValDouble mskirROI = ROI(mskir,-dx, -dy);
-			//waitKey(0);
-		    //mskiqROI=mskiqROI*127;
-//			pinta(mskiqROI,Alto,Ancho, 1);
-//			waitKey(0);
-		    //sumROI(masciq, mskiq, dx, dy);
+			mskiqROI = ROI(mskiq, dx, dy);//dx y dy en este
+			ImageValDouble mskirROI(0.0,Alto*Ancho);
 
-
-
-		//	mskirROI=mskirROI*128;
-//			pinta(mskirROI,Alto,Ancho, 2);
-//			waitKey(0);
-			//sumROI(masciq, mskir, -dx, -dy);
-
+			mskirROI = ROI(mskir,-dx, -dy);
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
 			//-----------------------------
 			//SOLO DEBUG!!
-			ImageValChar valiq(50,(Alto*Ancho));
-		//	valiq=escalado8(mskDouble);
+//			ImageValChar valiq(50,(Alto*Ancho));
 //			cout << "iq   "<< iq<< "ir  "<< ir << endl;
-			masciq=mskiq*50;
-			//masciq=masciq+mskir*50;
+//			masciq=mskiq*50;
+//			sumROI(masciq, valiq, -dx, -dy);
 //
-		  sumROI(masciq, valiq, -dx, -dy);
-//
-		//   	sumROI(masciq, valiq, dx, dy);
-		  	pinta(masciq,dimX,dimY, iq);
-		  	masciq=masciq+mskir*50;
-		  	sumROI(masciq, valiq, dx, dy);
-		  	pinta(masciq,dimX,dimY, ir);
-		 //  waitKey(0);
+//			pinta(masciq,dimX,dimY, iq);
+//			masciq=mskir*50;
+//			sumROI(masciq, valiq, dx, dy);
+//			pinta(masciq,dimX,dimY, ir);
+//			 waitKey(0);
 
 
 			//------------------------------
-
-
-
-
-
-
-			//Calcula las regiones de interes de  las mascaras
+		//Calcula las regiones de interes de  las mascaras
 			ImageValDouble datiqROI = ROI(dat[iq], -dx, -dy);
 			ImageValDouble datirROI = ROI(dat[ir], dx, dy);
 
 
 			ImageValDouble diff = (datiqROI - datirROI)*(mskDouble);
-//			ImageValDouble masciq2(con.size());
-//			sumROI(masciq2, diff, dx, dy);
-//			ImageValChar aux=escalado8(masciq2);
-//			pinta(aux,dimX,dimY, 1);
-//			waitKey(0);
 
-//			ImageValDouble conJROI = ROI(con, dx, dy);
-//			ImageValDouble conIROI = ROI(con,  -dx, -dy);
 			ImageValDouble conJROI (diff.size());
 			ImageValDouble conIROI (diff.size());
 
@@ -302,9 +274,9 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 			// Aplicar la mascara a las ventanas de la matriz de pares de pixeles
 			pixCntJROI =  mskDouble;
-			sumROI(pixCnt, pixCntJROI, -dx, -dy);
+			sumROI(pixCnt, pixCntJROI, dx, dy);
 			pixCntIROI =  mskDouble;
-			sumROI(pixCnt, pixCntIROI,  dx, dy);
+			sumROI(pixCnt, pixCntIROI,  -dx, -dy);
 
 
 			pasada++;
@@ -313,6 +285,8 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 		}
 
 	}
+	cout << "Pinta COM: " << pasada << endl;
+	cout << "COM MAX VVVVVVy min: "  <<  con.max() << "        " <<con.min() << endl;
 	masciq=escalado8(con);
 	pinta(masciq,dimX,dimY, 2);
 	waitKey(0);
@@ -324,9 +298,9 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValChar& tmp, Imag
 
 void doIteration(const ImageValDouble& con,\
 		ImageValDouble& gain,\
-		const ImageValChar& tmp,\
+		const ImageValShort& tmp,\
 		const ImageValDouble& pixCnt,\
-		const int disp[8][2]) {
+		const int disp[9][2]) {
 
 
 
@@ -340,19 +314,19 @@ void doIteration(const ImageValDouble& con,\
 
 	//ImageValDouble gainTmp(con.size());
 
-	for(unsigned int iq = 1; iq < 8; iq++) {
+	for(unsigned int iq = 1; iq < 9; iq++) {
 
 		// Obtencion de la mascara
-		ImageValChar mskiq = (tmp & (1 << iq)) / (1 << iq);
+		ImageValShort mskiq = (tmp & (1 << iq)) / (1 << iq);
 
 		for(unsigned int ir = 0; ir < iq; ir++) {
 
 			// Obtencion de la mascara
-			ImageValChar mskir = (tmp & (1 << ir)) / (1 << ir);
+			ImageValShort mskir = (tmp & (1 << ir)) / (1 << ir);
 
 			// Calcula de los desplazamientos relativos
-			int dx = disp[iq][0] - disp[ir][0];
-			int dy = disp[iq][1] - disp[ir][1];
+			int dy = disp[iq][0] - disp[ir][0];
+			int dx = disp[iq][1] - disp[ir][1];
 
 			//int*  desp = desplazamientos(centros, iq, ir);
 
@@ -385,8 +359,8 @@ void doIteration(const ImageValDouble& con,\
 			ImageValDouble gainTmpJROI(mskDouble.size());
 			ImageValDouble gainTmpIROI(mskDouble.size());
 
-			ImageValDouble gainJROI=ROI(gain, -dx, -dy);
-			ImageValDouble gainIROI=ROI(gain, dx,dy);
+			ImageValDouble gainJROI=ROI(gain, dx, dy);
+			ImageValDouble gainIROI=ROI(gain, -dx,-dy);
 
 			// Modificar la ganancia temporal en base a la ganancia y la mascara
 			gainTmpJROI = gainJROI*mskDouble;
@@ -504,9 +478,9 @@ void doIteration(const ImageValDouble& con,\
 
 ImageValDouble iterate(const ImageValDouble& con, \
 		ImageValDouble& gain, \
-            const ImageValChar& tmp, \
+            const ImageValShort& tmp, \
             const ImageValDouble& pixCnt, \
-            const int disp[8][2], \
+            const int disp[9][2], \
 			const unsigned int loops) {
 
 

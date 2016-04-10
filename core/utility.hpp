@@ -10,6 +10,7 @@ using namespace std;
 
 typedef valarray<unsigned int>   ImageValInt;
 typedef valarray<unsigned char>  ImageValChar;
+typedef valarray<unsigned short>  ImageValShort;
 typedef valarray<unsigned long>  ImageValLong;
 typedef valarray<float>  		 ImageValFloat;
 typedef valarray<double>		 ImageValDouble;
