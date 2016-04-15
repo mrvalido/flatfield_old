@@ -17,7 +17,7 @@
 #include <cmath>
 #include "utility.hpp"
 
-
+#define no_of_image 9
 #define dimX					2048
 #define dimY					2048
 #define ind( y, x ) ( y*dimX+x )

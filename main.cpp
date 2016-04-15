@@ -1,3 +1,56 @@
+/*This is the function that does all the dirty work for you, except
+;  calculating the displacement between images. This can be done with
+;  the routine get_disp included in this package, or use your own
+;  favorite method.
+;
+;  The required input for this function are:
+;
+;		data:  3-D array containing the succesive displaced images. JAB
+
+;
+;		disp:		a 2 x no_of_image real array containning the
+;					displacement of each image. The relative
+;					displacement will be calculated as
+;					dr(i->j) = disp(*,j)-disp(*,i)
+					(dx,dy)
+;
+;		rmin & rmax:Intensity threshold. If a pixel has intensity
+;					greater than rmax or less than rmin,
+;				        then that pixel will be marked 'bad'
+;                                       and will not be used for the gain
+;				        calculation.
+;
+;  On exit, the function returns the following variables:
+;
+;		flat:		The flatfield after no_iter iterations.
+;
+;		con:		The algorithm constant (see the paper by Kuhn,
+;			        Lin, & Loranz, 1991 Publication of the
+;				Astronomical Society of the Pacific, 103,1097)
+;
+;		gain:		Log10(flat).
+;
+;		tmp:		template containning the bad pixel maps for the
+;				images
+;
+;		pix_cnt:	No of pair count. N(x) in Kuhn et al paper.
+;
+;  We keep the output (con,gain,tmp,pix_cnt) so that we can continue
+;  iteration using function 'iterate' without going through get_images
+;  and get_con again.
+;
+;  HISTORY:                                                                JAB
+;	    Este programa ha sido esencialmente trabajado por              JAB
+;	    Phil Wilberg adaptando el programa fortran original            JAB
+;	    hecho por Haosheng Lin.                                        JAB
+;	    Modified by Jose A. Bonet on 29 August, 1995                   JAB
+
+
+
+*/
+
+
+
 // cookbook CCfits demonstration program
 //	Astrophysics Science Division,
 //	NASA/ Goddard Space Flight Center
@@ -36,6 +89,7 @@
 #define IMAX 82000 //.0
 #define LOOPS 10
 
+
 #include <opencv2/opencv.hpp>
 #include "core/flatfield.hpp"
 using namespace cv;
@@ -47,44 +101,12 @@ void pinta2(ImageValChar& val,int Dy,int Dx, int indice);
 // The library is enclosed in a namespace.
 
 int main(){
-//(x,y)
-//	const int disp[8][2] = {
-//						{1316,991},
-//				 	    {1252,1201},
-//						{1056,1331},
-//						{808,1231},
-//						{682,1013},
-//						{802,801},
-//						{1032,731},
-//						{1292,851}
-//					   };
-
-
-//	//disp al reves (y,x)
-//	const int disp[8][2] = {
-	//						{991,1316},//desplazo el origen de coordenadas aqui
-	//				 	    {1201,1252},
-	//						{1331,1056},
-	//						{1231,808},
-	//						{1013,682},
-	//						{801,802},
-	//						{731,1032},
-	//						{851,1292}
-//					   };
-
-//	const int disp[8][2] =	{{0, 0},//
-//							{210,-64},
-//							{340,-260},
-//							{240,-508},
-//							{22,-634,},
-//							{-190,-514},
-//							{-260,-284},
-//							{-140,-24}};//
+//(y,x) ojo con los datos de David Orozco son (x,y)
 	const int disp[9][2]={{ 0,0},{-30,294},{180,230},{310, 34},{210,-214},{-8,-340},{-220,-220},{-290,10},{-170,270}};
 
 
 
-	//const int disp[8][2] ={{0, 0},{-64,210},{-260, 340},{-508, 240},{-634,22},{-514,-190},{-284,-260},{-24,-140}};
+
 
 	string nombreImagen;
 	char imageName[] = "./im/im0X.fits";
@@ -92,60 +114,49 @@ int main(){
 
 
 
-	ImageValShort tmp (dimX*dimY);
+	ImageValShort tmp (dimX*dimY);//initial 16 bit mask
 	// Leer imagenes desde fichero, guardandolas en el vector de datos
 
-	for(unsigned int i = 0; i < 9; i++) {
+	for(unsigned int i = 0; i < no_of_image; i++) {
 
 		imageName[8] = 48 + i;
 		nombreImagen = imageName;
-		//cout << "nombre"<< nombreImagen<< endl;
-		datacube.push_back(readImageFit(nombreImagen));
 
+		datacube.push_back(readImageFit(nombreImagen));
 		getImages(datacube[i], tmp, IMIN, IMAX, i);
 	}
 
 
 
-	ImageValDouble pixCnt(0.0, datacube[0].size());
-	ImageValDouble con(0.0, datacube[0].size());
+	ImageValDouble pixCnt(0.0, datacube[0].size()); //K&Lin Pixel Count
+	ImageValDouble con(0.0, datacube[0].size());//K&Lin Constant
 
 	con = getConst(datacube, tmp, pixCnt, disp);
-
-
-	//pinta(con, dimX, dimX, 1);
-
-
 
 	ImageValDouble pixCntAux(0.0,dimX*dimY);
 	pixCntAux= Max(pixCnt, 1.0);
 	ImageValDouble gain(0.0,dimX*dimY);
-	gain= con / pixCntAux;
-		//cout << "minimo pxaux"<< (int) auxpix.min() <<"   "<< (int)pix.max() <<endl;
+	gain= con / pixCntAux; //gain is normalized K&L constant
+
 	pixCntAux= Min(pixCnt, 1.0);
 
+#ifdef DEBUG
+	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
 	ImageValChar pix=escalado8(gain);
-	//cout << "minimo pxaux"<< (int) pix.min() <<"   "<< (int)pix.max() <<endl;
 	pinta2(pix,dimX, dimY,4);
 	waitKey(0);
-	//cout<< "klsdflsfklskflskfs"<<endl;
-	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
+#endif
 
 	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
+
+
 #ifdef DEBUG
-
-
+	cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
 	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
 	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
-
- pix=escalado8(flat);
-			pinta2(pix,dimX, dimY,2);
-			waitKey(0);
-
-
-
-
-
+	pix=escalado8(flat);
+	pinta2(pix,dimX, dimY,2);
+	waitKey(0);
 #endif
 	//	//Calculo de la ganancia unitaria
 	//	ImageValDouble pixCntAux = Max(pixCnt, 1.0);
@@ -158,7 +169,7 @@ int main(){
 	return 0;
 }
 
-
+//pinta 2 function for debug purpose
 void pinta2(ImageValChar& val,int Dy,int Dx, int indice){
 
 	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S

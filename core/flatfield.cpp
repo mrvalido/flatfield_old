@@ -182,6 +182,15 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
    return (unsigned char)n;
 }
 
+
+ /**
+  * get algorithm's constant term it also calculate the valid pixel pairs count
+  *
+  *
+  *
+  *
+  *
+  */
 ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, ImageValDouble& pixCnt, const int disp[9][2]) {
 
 	vector<ImageValDouble> dat;
@@ -198,7 +207,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
     int b;
     b=(int)a;
     cout << "bool to inter" << b+1 << endl;
-	for(unsigned int iq = 1; iq < 9; iq++) {
+	for(unsigned int iq = 1; iq < no_of_image; iq++) {
 
 		// Calculo del logaritmo comun (base 10) de la imagen
 		dat.push_back(log_10(data[iq]));
@@ -295,7 +304,15 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 }
 
 //********************************************************
-
+/**
+ * Do an iteration
+ * @param
+ * @param con  	    Constant algorithm Term
+ * @param gain 		is log10(flat)
+ * @param tmp		store masks for each input image
+ * @param  pixCnt 	No of pair count. N(x) in Kuhn et al paper
+ * @return gain     updated gain table
+ */
 void doIteration(const ImageValDouble& con,\
 		ImageValDouble& gain,\
 		const ImageValShort& tmp,\
@@ -314,7 +331,7 @@ void doIteration(const ImageValDouble& con,\
 
 	//ImageValDouble gainTmp(con.size());
 
-	for(unsigned int iq = 1; iq < 9; iq++) {
+	for(unsigned int iq = 1; iq < no_of_image; iq++) {
 
 		// Obtencion de la mascara
 		ImageValShort mskiq = (tmp & (1 << iq)) / (1 << iq);
