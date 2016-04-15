@@ -123,7 +123,7 @@ int main(){
 		nombreImagen = imageName;
 
 		datacube.push_back(readImageFit(nombreImagen));
-		getImages(datacube[i], tmp, IMIN, IMAX, i);
+		Mask(datacube[i], tmp, IMIN, IMAX, i);
 	}
 
 

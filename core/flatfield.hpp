@@ -28,7 +28,7 @@ using namespace CCfits;
 
 
 ImageValInt readImageFit(string nombreImagen);
-void getImages(ImageValInt& data, ImageValShort& tmp,  const int iMin, const int iMax, int index);
+void Mask(ImageValInt& data, ImageValShort& tmp,  const int iMin, const int iMax, int index);
 
 template <typename TT>
 void pinta(valarray<TT>& val,int Dy,int Dx, int indice);

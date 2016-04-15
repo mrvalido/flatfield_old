@@ -31,7 +31,17 @@ ImageValInt readImageFit(string nombreImagen){
 	return im;
 }
 
-void getImages(ImageValInt& data, \
+//********************************************************
+/**
+ * Mask fuction, Purpose is to find the valid pixels in the image Starts from dark current and bad pixel. Also, it corrects image Applying a
+ * threshold to the image (lower limit < valid pixels < upper limit). Mask should include Active Regions and Faculae(**)
+ * @param data  	 data image   Constant algorithm Term
+ * @param tmp		initial mask and store masks for each input image
+ * @param iMax 		intesity upper limit
+ * @param iMin 		intesity lower limit
+ * @return data & tmp     mask data and update initial mask
+ */
+void Mask(ImageValInt& data, \
               ImageValShort& tmp, \
               const int iMin, \
               const int iMax,
