@@ -126,36 +126,35 @@ int main(){
 		Mask(datacube[i], tmp, IMIN, IMAX, i);
 	}
 
-
-
 	ImageValDouble pixCnt(0.0, datacube[0].size()); //K&Lin Pixel Count
 	ImageValDouble con(0.0, datacube[0].size());//K&Lin Constant
 
 	con = getConst(datacube, tmp, pixCnt, disp);
 
+
 	ImageValDouble pixCntAux(0.0,dimX*dimY);
 	pixCntAux= Max(pixCnt, 1.0);
+
 	ImageValDouble gain(0.0,dimX*dimY);
 	gain= con / pixCntAux; //gain is normalized K&L constant
 
 	pixCntAux= Min(pixCnt, 1.0);
 
-#ifdef DEBUG
-	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
-	ImageValChar pix=escalado8(gain);
-	pinta2(pix,dimX, dimY,4);
-	waitKey(0);
-#endif
 
-	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
+
+	//ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 
 
 #ifdef DEBUG
 	cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
 	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
-	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
-	pix=escalado8(flat);
-	pinta2(pix,dimX, dimY,2);
+//	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
+	ImageValChar pixx=escalado8(con);
+		pinta(pixx,dimX,dimY,5);
+		pixx=escalado8(con);
+			pinta(pixx,dimX,dimY,2);
+//	ImageValChar pix=escalado8(flat);
+	//pinta2(pix,dimX, dimY,3);
 	waitKey(0);
 #endif
 	//	//Calculo de la ganancia unitaria

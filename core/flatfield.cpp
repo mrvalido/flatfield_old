@@ -112,6 +112,14 @@ int* desplazamientos(int centros[8][2], int imagenQ, int imagenR){
 
 	return desp;
 }
+
+/**
+ * Retrieves a Region of Interest (ROI)from input image . First it calculates the lower and upper corner of ROI
+ * @param val	input image
+ * @param dx	x component of relative displacement
+ * @param dy	y component of relative displacement
+ * return ROI	calculated ROI
+ */
 template <typename T>
 ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 
@@ -123,15 +131,14 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 
 //	unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + dimY; // FILAS
 //	unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + dimX; // COLUMNAS
-
-//	cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
+cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
 
 	int ancho = (int)(jxh-jxl);
 	int alto  = (int)(jyh-jyl);
 	int ta=ancho*alto;
 	//Alt= (jxl-jxh);
-	//cout << "tamño : "  <<  ta << "    " << ta << endl;
-	//cout << " Alto y ancho : "  <<  alto << "    " << ancho << endl;
+	cout << "tamño : "  <<  ta << "    " << ta << endl;
+	cout << " Alto y ancho : "  <<  alto << "    " << ancho << endl;
     Ancho=ancho;
 
     Alto=alto;
@@ -151,6 +158,14 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 	return ROI;
 }
 
+/**
+ * Update a Region of Interest in input image (ROI).
+ * First it calculates the lower and upper corner of ROI and add ROI to image val
+ * @param val	input image
+ * @param dx	x component of relative displacement
+ * @param dy	y component of relative displacement
+ * return ROI	calculated ROI
+ */
 template <typename T>
 void sumROI(valarray<T>& val, const valarray<T>& ROI, int dx, int dy){
 
@@ -231,43 +246,21 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 
 			// Obtencion de la mascara
 			ImageValShort mskir = (tmp & (1 << ir)) / (1 << ir);
-			//Desplazamientos
-			//int*  desp = desplazamientos(centros, iq, ir);
-			//cout << "maximo00  " << (int)mskiq.max() << endl;
-
-
-
 
 
 			int dy = (disp[iq][0] - disp[ir][0]);
 			int dx = (disp[iq][1] - disp[ir][1]);
-//
-
-		//	cout << "dx: " << dx << iq << endl;
-		//	cout << "dy: " << dy << ir << endl;
 
 
 			//Calcula las regiones de interes de  las mascaras
-			ImageValDouble mskiqROI(0.0,Alto*Ancho);
+			ImageValDouble mskiqROI;//(0.0,Alto*Ancho);
 
 			mskiqROI = ROI(mskiq, dx, dy);//dx y dy en este
-			ImageValDouble mskirROI(0.0,Alto*Ancho);
+
+			ImageValDouble mskirROI;//(0.0,Alto*Ancho);
 
 			mskirROI = ROI(mskir,-dx, -dy);
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
-			//-----------------------------
-			//SOLO DEBUG!!
-//			ImageValChar valiq(50,(Alto*Ancho));
-//			cout << "iq   "<< iq<< "ir  "<< ir << endl;
-//			masciq=mskiq*50;
-//			sumROI(masciq, valiq, -dx, -dy);
-//
-//			pinta(masciq,dimX,dimY, iq);
-//			masciq=mskir*50;
-//			sumROI(masciq, valiq, dx, dy);
-//			pinta(masciq,dimX,dimY, ir);
-//			 waitKey(0);
-
 
 			//------------------------------
 		//Calcula las regiones de interes de  las mascaras
@@ -276,7 +269,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 
 
 			ImageValDouble diff = (datiqROI - datirROI)*(mskDouble);
-
+			cout<< "diff size=   "<<diff.size()<<endl;
 			ImageValDouble conJROI (diff.size());
 			ImageValDouble conIROI (diff.size());
 
@@ -304,11 +297,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 		}
 
 	}
-	cout << "Pinta COM: " << pasada << endl;
-	cout << "COM MAX VVVVVVy min: "  <<  con.max() << "        " <<con.min() << endl;
-	masciq=escalado8(con);
-	pinta(masciq,dimX,dimY, 2);
-	waitKey(0);
+
 	return con;
 
 }
@@ -340,7 +329,7 @@ void doIteration(const ImageValDouble& con,\
 
 
 	//ImageValDouble gainTmp(con.size());
-
+int cont=0;
 	for(unsigned int iq = 1; iq < no_of_image; iq++) {
 
 		// Obtencion de la mascara
@@ -358,29 +347,12 @@ void doIteration(const ImageValDouble& con,\
 			//int*  desp = desplazamientos(centros, iq, ir);
 
 			// Calcular ventanas de mascara
-			//Mat mskiqROI(mskiq, Range(jyl, jyh), Range(jxl, jxh));
-			//Mat mskirROI(mskir, Range(iyl, iyh), Range(ixl, ixh));
+
 			ImageValDouble mskiqROI = ROI(mskiq, dx, dy);
 			ImageValDouble mskirROI = ROI(mskir, -dx,-dy);
 
 			// Calcular la mascara de las ventanas
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
-		//	cout << "GGGGGGGGGGGGGG" << mskDouble.min() << "  "<<mskDouble.max() <<endl;
-			//waitKey(0);
-
-//			 msk=(mskiq(jxl:jxh,jyl:jyh) and mskir(ixl:ixh,iyl:iyh))
-
-//			      gain_n(jxl:jxh,jyl:jyh) = gain_n(jxl:jxh,jyl:jyh) $
-//			                              + gain(ixl:ixh,iyl:iyh)*msk
-//			      gain_n(ixl:ixh,iyl:iyh) = gain_n (ixl:ixh,iyl:iyh) $
-//			                              + gain(jxl:jxh,jyl:jyh)*msk
-
-//			Mat msk = mskiqROI.mul(mskirROI);
-//			msk.convertTo(msk, CV_64F);
-
-
-
-			//------------------------------
 
 			// Calcular ventanas de ganancia y ganancia temporal
 			ImageValDouble gainTmpJROI(mskDouble.size());
@@ -397,10 +369,10 @@ void doIteration(const ImageValDouble& con,\
 			sumROI(gainTmp, gainTmpIROI, dx,dy);
 
 
-
+			cont++;
 #ifdef PROGRESS
 
-			cout << "doItera : Iteración " << " de 28..." << endl;
+			cout << "doItera : Iteración " << cont << " de 36..." << endl;
 
 #endif
 
@@ -420,10 +392,8 @@ void doIteration(const ImageValDouble& con,\
 	cout << "minimo GainTM Antes  "<< gainTmp.min() <<"   "<< gainTmp.max() <<endl;
     cout << "minimo GainTM2  "<< indice.min() <<"   "<< indice.max() <<endl;
 
-//	ImageValChar pixx=escalado8(gainTmp);
-//	pinta(pixx,dimX,dimY,1);
-//	waitKey(0);
 
+//limpiar esto
 
 	//gainTmp = gainTmp.mul(index);
 
@@ -467,9 +437,7 @@ void doIteration(const ImageValDouble& con,\
 	//valarray<double> indice2=indice;
     indice=G*indice;
 	//ImageValDouble G=abs(gainTmp - ave2);
-	ImageValChar pixx=escalado8(indice);
-	pinta(pixx,dimX,dimY,1);
-	waitKey(0);
+
 
 	cout << "minimo ind  "<< G.min() <<"   "<< G.max() <<endl;
 
@@ -492,9 +460,6 @@ void doIteration(const ImageValDouble& con,\
 	// Devolver la tabla de ganancias
 	gain = gainTmp;
 	cout<< "media y sma total   "<< ave2 << "  "<< sum2 << endl;
-	pixx=escalado8(gain);
-	cout  << "idex.........." <<  endl;
-	pinta(pixx,dimX,dimY,3);
 
 
 
@@ -527,11 +492,13 @@ ImageValDouble iterate(const ImageValDouble& con, \
 	// Calculo de la imagen de flatfield
 	//ImageValDouble flat = gain * log(10.0);
 	ImageValDouble flat = pow(10.0,gain);
+
+
 	cout << "P1 pinta flat " << endl;
 	ImageValChar pixx=escalado8(flat);
 	//			//        cout  << "idex.........." << endl;
 	pinta(pixx,dimX,dimY,1);
-	waitKey(0);
+
 //
 //
 //	//flat=exp(flat);
