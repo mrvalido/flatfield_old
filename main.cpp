@@ -142,19 +142,19 @@ int main(){
 
 
 
-	//ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
+	ImageValDouble flat = iterate(con, gain, tmp, pixCnt,disp, LOOPS);
 
 
 #ifdef DEBUG
 	cout << "CON  MAX VVVVVVy min: "  <<  con.max() << "        " << con.min() << endl;
 	cout << "GAIN MAX VVVVVVy min: "  <<  gain.max() << "        " << gain.min() << endl;
-//	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
+	cout << "FLAT  MAX VVVVVVy min: "  <<  flat.max() << "        " << flat.min() << endl;
 	ImageValChar pixx=escalado8(con);
 		pinta(pixx,dimX,dimY,5);
 		pixx=escalado8(con);
 			pinta(pixx,dimX,dimY,2);
-//	ImageValChar pix=escalado8(flat);
-	//pinta2(pix,dimX, dimY,3);
+	ImageValChar pix=escalado8(flat);
+	pinta2(pix,dimX, dimY,3);
 	waitKey(0);
 #endif
 	//	//Calculo de la ganancia unitaria

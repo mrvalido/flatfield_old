@@ -255,11 +255,11 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 			//Calcula las regiones de interes de  las mascaras
 			ImageValDouble mskiqROI;//(0.0,Alto*Ancho);
 
-			mskiqROI = ROI(mskiq, dx, dy);//dx y dy en este
+			mskiqROI = ROI(mskiq, -dx, -dy);//dx y dy en este
 
 			ImageValDouble mskirROI;//(0.0,Alto*Ancho);
 
-			mskirROI = ROI(mskir,-dx, -dy);
+			mskirROI = ROI(mskir,dx, dy);
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
 
 			//------------------------------
@@ -286,9 +286,9 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 
 			// Aplicar la mascara a las ventanas de la matriz de pares de pixeles
 			pixCntJROI =  mskDouble;
-			sumROI(pixCnt, pixCntJROI, dx, dy);
+			sumROI(pixCnt, pixCntJROI, -dx, -dy);
 			pixCntIROI =  mskDouble;
-			sumROI(pixCnt, pixCntIROI,  -dx, -dy);
+			sumROI(pixCnt, pixCntIROI,  dx, dy);
 
 
 			pasada++;
@@ -348,8 +348,8 @@ int cont=0;
 
 			// Calcular ventanas de mascara
 
-			ImageValDouble mskiqROI = ROI(mskiq, dx, dy);
-			ImageValDouble mskirROI = ROI(mskir, -dx,-dy);
+			ImageValDouble mskiqROI = ROI(mskiq, -dx, -dy);
+			ImageValDouble mskirROI = ROI(mskir, dx, dy);
 
 			// Calcular la mascara de las ventanas
 			ImageValDouble mskDouble = mskiqROI * mskirROI;
@@ -358,15 +358,15 @@ int cont=0;
 			ImageValDouble gainTmpJROI(mskDouble.size());
 			ImageValDouble gainTmpIROI(mskDouble.size());
 
-			ImageValDouble gainJROI=ROI(gain, dx, dy);
-			ImageValDouble gainIROI=ROI(gain, -dx,-dy);
+			ImageValDouble gainJROI=ROI(gain, -dx, -dy);
+			ImageValDouble gainIROI=ROI(gain, dx,dy);
 
 			// Modificar la ganancia temporal en base a la ganancia y la mascara
 			gainTmpJROI = gainJROI*mskDouble;
-			sumROI(gainTmp, gainTmpJROI, -dx, -dy);
+			sumROI(gainTmp, gainTmpJROI, dx, dy);
 
 			gainTmpIROI = gainIROI*mskDouble;
-			sumROI(gainTmp, gainTmpIROI, dx,dy);
+			sumROI(gainTmp, gainTmpIROI, -dx,-dy);
 
 
 			cont++;
