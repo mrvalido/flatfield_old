@@ -308,7 +308,9 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
 {
    return (unsigned char)n;
 }
-
+/**
+ * fiter to
+ */
  int criba(ImageValDouble& val, double aver, double fiveSigma){
 	 int npix=0;
 	 for (int i=0;i<dimX*dimY;i++){
@@ -494,6 +496,7 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 			ImageValDouble mskiqROI;//(0.0,Alto*Ancho);
 
 			mskiqROI = ROI(mskiq, -dx, -dy);//dx y dy en este
+
 
 			ImageValDouble mskirROI;//(0.0,Alto*Ancho);
 
