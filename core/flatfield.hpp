@@ -12,6 +12,7 @@
 #include <cstdlib>   // for srand and rand
 #include <ctime>     // for time
 #include <CCfits/CCfits>
+#include <fitsio.h>
 #include <string>
 #include <algorithm>
 #include <cmath>
@@ -28,6 +29,8 @@ using namespace CCfits;
 
 
 ImageValInt readImageFit(string nombreImagen);
+//template <typename T>
+int writeImage(ImageValDouble val,string fileName,long bitPix);
 void Mask(ImageValInt& data, ImageValShort& tmp,  const int iMin, const int iMax, int index);
 
 template <typename TT>
@@ -35,6 +38,7 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice);
 
 ImageValChar escalado8(const ImageValDouble& val);
 ImageValChar escalado8(const ImageValShort& val);
+ImageValChar escalado8(const ImageValInt& val);
 
 int* desplazamientos(const int centros[9][2], int imagenQ, int imagenR);
 
@@ -45,6 +49,8 @@ template <typename T>
 void sumROI(valarray<T>& val, const valarray<T>& ROI, int dx, int dy);
 
 unsigned char toUchart( double n );
+int criba(ImageValDouble& val, double aver, double fiveSigma);
+
 
 ImageValDouble getConst(vector<ImageValInt>& data,
 		const ImageValShort& tmp,\

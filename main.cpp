@@ -101,15 +101,26 @@ void pinta2(ImageValChar& val,int Dy,int Dx, int indice);
 // The library is enclosed in a namespace.
 
 int main(){
-//(y,x) ojo con los datos de David Orozco son (x,y)
-	const int disp[9][2]={{ 0,0},{-30,294},{180,230},{310, 34},{210,-214},{-8,-340},{-220,-220},{-290,10},{-170,270}};
 
+	//(y,x) ojo con los datos de David Orozco son (x,y)
+	//const int disp[9][2]={{ 0,0},{-30,294},{180,230},{310, 34},{210,-214},{-8,-340},{-220,-220},{-290,10},{-170,270}};
 
+	// (y,x)% test_ND08_EVOL_F0.3_NOROT/
+	//const int disp[9][2]={{0,0},{0,13},{12,5},{9,-8},{-4,-11},{-12,0},{-5,11},{8,10},{12,-3}};
 
+	// (y,x)% test_ND08_EVOL_F1_NOROT/
+	//const int disp[9][2]={{0,0},{1,147},{ 134,60},{106,-96},{-47,-132},{-142,-5},{-63,132},{94,114},{140,-37}};
 
+	// (y,x)% test_ND08_EVOL_F2_NOROT/
+	const int disp[9][2]={ {0,0},{6,590},{537,241},{427,-384},{-190,-531},{-571,-22},{-254,528},{376,456},{560,-151}};
 
 	string nombreImagen;
-	char imageName[] = "./im/im0X.fits";
+	//char imageName[] = "./im/im0X.fits";
+	//four sets of 9 each displacement image
+		//char imageName[] = "./im/im0X.fits"; //   8  images set with a displacement below 15% of  solar disc radius
+		//char imageName[] = "./imF03/im0X.fits";//11 images set with a displacement around 0.3% of  solar disc radius
+		//char imageName[] = "./imF1/im0X.fits";//10  images set with a displacement up to 20% of  solar disc radius
+		char imageName[] = "./imF2/im0X.fits";//  10  images set with a displacement up to 40% of  solar disc radius
 	vector <ImageValInt> datacube;
 
 
@@ -119,12 +130,16 @@ int main(){
 
 	for(unsigned int i = 0; i < no_of_image; i++) {
 
-		imageName[8] = 48 + i;
+		imageName[10] = 48 + i;
 		nombreImagen = imageName;
 
 		datacube.push_back(readImageFit(nombreImagen));
+
 		Mask(datacube[i], tmp, IMIN, IMAX, i);
+		//ImageValChar pixxx=escalado8(datacube[i]);
+		//pinta(pixxx,dimX,dimY,5);
 	}
+	//waitKey(0);
 
 	ImageValDouble pixCnt(0.0, datacube[0].size()); //K&Lin Pixel Count
 	ImageValDouble con(0.0, datacube[0].size());//K&Lin Constant
@@ -152,9 +167,10 @@ int main(){
 	ImageValChar pixx=escalado8(con);
 		pinta(pixx,dimX,dimY,5);
 		pixx=escalado8(con);
-			pinta(pixx,dimX,dimY,2);
+		pinta(pixx,dimX,dimY,2);
 	ImageValChar pix=escalado8(flat);
 	pinta2(pix,dimX, dimY,3);
+	int t=writeImage(flat,"flat1.fit",DOUBLE_IMG);
 	waitKey(0);
 #endif
 	//	//Calculo de la ganancia unitaria

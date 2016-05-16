@@ -31,6 +31,93 @@ ImageValInt readImageFit(string nombreImagen){
 	return im;
 }
 
+/*************************************************************/
+/**
+ * this Function  writes image in fit file
+ * BITPIX code values for FITS image types
+ * BYTE_IMG      8
+ * SHORT_IMG    16
+ * LONG_IMG     32 n c types  is unsigned Int 2bytes
+ * LONGLONG_IMG 64
+ * FLOAT_IMG   -32   in c types  is float   4bytes
+ * DOUBLE_IMG  -64   in c types is double	8bytes
+ * @param val	input image to be write in filename
+ * @param fileName	name of Fits file
+ * @param bitPix number of bit for image pixs (see above)
+ * return error code
+ */
+//template <typename T>
+int writeImage(ImageValDouble val,string fileName,long bitPix)
+{
+
+    // Create a FITS primary array containing a 2-D image
+    // declare axis arrays.
+    long naxis    =   2;
+    long naxes[2] = { dimX, dimY };
+    //long bitPix=LONG_IMG;
+
+    // declare auto-pointer to FITS at function scope. Ensures no resources
+    // leaked if something fails in dynamic allocation.
+    std::auto_ptr<FITS> pFits(0);
+
+    try
+    {
+        // overwrite existing file if the file already exists.
+
+        //const std::string fileName("im00_c.fit");
+
+        // Create a new FITS object, specifying the data type and axes for the primary
+        // image. Simultaneously create the corresponding file.
+
+        // this image is unsigned short data, demonstrating the cfitsio extension
+        // to the FITS standard.
+
+        pFits.reset( new FITS(fileName , bitPix , naxis , naxes ) );
+    }
+    catch (FITS::CantCreate)
+    {
+          // ... or not, as the case may be.
+          return -1;
+    }
+
+    long nelements(1);
+    long  fpixel(1);
+
+
+    // Find the total size of the array.
+    // this is a little fancier than necessary ( It's only
+    // calculating naxes[0]*naxes[1]) but it demonstrates  use of the
+    // C++ standard library accumulate algorithm.
+
+    nelements = naxes[0]*naxes[1];
+
+
+    ImageValDouble array(nelements);
+    for (int i = 0; i < nelements; ++i)
+    {
+        array[i] = val[i];
+    }
+
+    pFits->pHDU().addKey("BITPIX", bitPix,"bit per pixel");
+    pFits->pHDU().addKey("NAXIS",naxis," number of axis ");
+    pFits->pHDU().addKey("NAXIS1",naxes[0]," length of axi x ");
+    pFits->pHDU().addKey("NAXIS2",naxes[1]," length of axi y ");
+
+    pFits->pHDU().write(fpixel,nelements,array);
+
+
+    // PHDU's friend ostream operator. Doesn't print the entire array, just the
+    // required & user keywords, and is provided largely for testing purposes [see
+    // readImage() for an example of how to output the image array to a stream].
+
+    std::cout << pFits->pHDU() << std::endl;
+
+    return 0;
+}
+
+
+
+
 //********************************************************
 /**
  * Mask fuction, Purpose is to find the valid pixels in the image Starts from dark current and bad pixel. Also, it corrects image Applying a
@@ -100,6 +187,21 @@ ImageValChar escalado8(const ImageValShort& val){
 }
 
 ////*************************************************************************************
+ImageValChar escalado8(const ImageValInt& val){
+	int size_val = val.size();
+	ImageValChar temp(size_val);
+
+	unsigned int mx = val.max();
+
+	for(int i = 0; i < size_val; i++){
+		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
+	}
+
+	return temp;
+}
+
+
+////*************************************************************************************
 ////*************************************************************************************
 
 int* desplazamientos(int centros[8][2], int imagenQ, int imagenR){
@@ -131,14 +233,14 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy){
 
 //	unsigned int iyl = max(0,  dy), iyh = min(0,  dy) + dimY; // FILAS
 //	unsigned int ixl = max(0,  dx), ixh = min(0,  dx) + dimX; // COLUMNAS
-cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
+//cout << "jyl: " << jyl << "      jxl: " << jxl << "        jyh: " << jyh << "        jxh: " << jxh << endl;
 
 	int ancho = (int)(jxh-jxl);
 	int alto  = (int)(jyh-jyl);
 	int ta=ancho*alto;
 	//Alt= (jxl-jxh);
-	cout << "tamño : "  <<  ta << "    " << ta << endl;
-	cout << " Alto y ancho : "  <<  alto << "    " << ancho << endl;
+	//cout << "tamño : "  <<  ta << "    " << ta << endl;
+//	cout << " Alto y ancho : "  <<  alto << "    " << ancho << endl;
     Ancho=ancho;
 
     Alto=alto;
@@ -207,6 +309,142 @@ void pinta(valarray<TT>& val,int Dy,int Dx, int indice){
    return (unsigned char)n;
 }
 
+ int criba(ImageValDouble& val, double aver, double fiveSigma){
+	 int npix=0;
+	 for (int i=0;i<dimX*dimY;i++){
+		 if (abs(val[i] - aver) > fiveSigma){
+			 val[i]=0;
+		     npix++;
+		 }
+	 }
+	 return npix;
+	 //G=(abs(gainTmp - ave2) <= fiveSigma);
+ }
+
+
+
+ int writeImage()
+ {
+
+     // Create a FITS primary array containing a 2-D image
+     // declare axis arrays.
+     long naxis    =   2;
+     long naxes[2] = { 300, 200 };
+
+     // declare auto-pointer to FITS at function scope. Ensures no resources
+     // leaked if something fails in dynamic allocation.
+     std::auto_ptr<FITS> pFits(0);
+
+     try
+     {
+         // overwrite existing file if the file already exists.
+
+         const std::string fileName("!atestfil.fit");
+
+         // Create a new FITS object, specifying the data type and axes for the primary
+         // image. Simultaneously create the corresponding file.
+
+         // this image is unsigned short data, demonstrating the cfitsio extension
+         // to the FITS standard.
+
+         pFits.reset( new FITS(fileName , USHORT_IMG , naxis , naxes ) );
+     }
+     catch (FITS::CantCreate)
+     {
+           // ... or not, as the case may be.
+           return -1;
+     }
+
+     // references for clarity.
+
+     long& vectorLength = naxes[0];
+     long& numberOfRows = naxes[1];
+     long nelements(1);
+
+
+     // Find the total size of the array.
+     // this is a little fancier than necessary ( It's only
+     // calculating naxes[0]*naxes[1]) but it demonstrates  use of the
+     // C++ standard library accumulate algorithm.
+
+     nelements = std::accumulate(&naxes[0],&naxes[naxis],1,std::multiplies<long>());
+
+     // create a new image extension with a 300x300 array containing float data.
+
+     std::vector<long> extAx(2,300);
+     string newName ("NEW-EXTENSION");
+     ExtHDU* imageExt = pFits->addImage(newName,FLOAT_IMG,extAx);
+
+     // create a dummy row with a ramp. Create an array and copy the row to
+     // row-sized slices. [also demonstrates the use of valarray slices].
+     // also demonstrate implicit type conversion when writing to the image:
+     // input array will be of type float.
+
+
+     std::valarray<int> row(vectorLength);
+     for (long j = 0; j < vectorLength; ++j) row[j] = j;
+     std::valarray<int> array(nelements);
+     for (int i = 0; i < numberOfRows; ++i)
+     {
+         array[std::slice(vectorLength*static_cast<int>(i),vectorLength,1)] = row + i;
+     }
+
+ #ifdef VALARRAY_DEFECT
+     const double PI ( std::atan(1.)*4. );
+ #else
+     const double PI (std::atan(1.)*4.);
+ #endif
+     // create some data for the image extension.
+     long extElements = std::accumulate(extAx.begin(),extAx.end(),1,std::multiplies<long>());
+     std::valarray<float> ranData(extElements);
+     const float PIBY = static_cast < float > (PI/150.);
+     for ( int jj = 0 ; jj < extElements ; ++jj)
+     {
+             float arg = static_cast < float > ( PIBY*jj );
+ #ifdef VALARRAY_DEFECT
+ 			float val = std::cos( arg );
+ 			ranData[jj] = val;
+ #else
+             ranData[jj] = static_cast < float > ( std::cos(arg) );
+ #endif
+     }
+
+     long  fpixel(1);
+
+     // write the image extension data: also demonstrates switching between
+     // HDUs.
+     imageExt->write(fpixel,extElements,ranData);
+
+     //add two keys to the primary header, one long, one complex.
+
+     long exposure(1500);
+ #ifdef VALARRAY_DEFECT
+ 	double re = std::cos( 2*PI/3.0 );
+ 	double im = std::sin( 2*PI/3.0 );
+     std::complex<float> omega( re, im );
+ #else
+ 	float re = static_cast < float > ( std::cos(2*PI/3.) );
+ 	float im = static_cast < float > ( std::sin(2*PI/3.) );
+     std::complex<float> omega( re, im );
+ #endif
+     pFits->pHDU().addKey("EXPOSURE", exposure,"Total Exposure Time");
+     pFits->pHDU().addKey("OMEGA",omega," Complex cube root of 1 ");
+
+
+     // The function PHDU& FITS::pHDU() returns a reference to the object representing
+     // the primary HDU; PHDU::write( <args> ) is then used to write the data.
+
+     pFits->pHDU().write(fpixel,nelements,array);
+
+
+     // PHDU's friend ostream operator. Doesn't print the entire array, just the
+     // required & user keywords, and is provided largely for testing purposes [see
+     // readImage() for an example of how to output the image array to a stream].
+
+     std::cout << pFits->pHDU() << std::endl;
+
+     return 0;
+ }
 
  /**
   * get algorithm's constant term it also calculate the valid pixel pairs count
@@ -269,7 +507,6 @@ ImageValDouble getConst(vector<ImageValInt>& data, const ImageValShort& tmp, Ima
 
 
 			ImageValDouble diff = (datiqROI - datirROI)*(mskDouble);
-			cout<< "diff size=   "<<diff.size()<<endl;
 			ImageValDouble conJROI (diff.size());
 			ImageValDouble conIROI (diff.size());
 
@@ -387,23 +624,22 @@ int cont=0;
 
 	gainTmp = gainTmp/pixCntAux;
 
-    ImageValDouble indice(0.0,pixCnt.size());
+    ImageValDouble indice(0.0,pixCnt.size());// matrix where pixCnt are zero
 	indice=Min(pixCnt,1.0);
+
 	cout << "minimo GainTM Antes  "<< gainTmp.min() <<"   "<< gainTmp.max() <<endl;
     cout << "minimo GainTM2  "<< indice.min() <<"   "<< indice.max() <<endl;
 
 
-//limpiar esto
 
-	//gainTmp = gainTmp.mul(index);
 
 
 	 gainTmp=indice*gainTmp;
 	cout << "minimo GainTM Despues "<< gainTmp.min() <<"   "<< gainTmp.max() <<endl;
-//	ImageValChar pixx2=escalado8(gainTmp);
-//    //        cout  << "idex.........." << endl;
-//   pinta(pixx2,dimX,dimY,2);
-//   waitKey(0);
+	//ImageValChar pixx2=escalado8(gainTmp);
+    //        cout  << "idex.........." << endl;
+   //pinta(pixx2,dimX,dimY,2);
+
 
   //  cout << "minimo ind  "<< ind.min() <<"   "<< ind.max() <<endl;
     cout << "minimo GainTM2  "<< indice.min() <<"   "<< indice.max() <<endl;
@@ -412,48 +648,63 @@ int cont=0;
     ImageValDouble TMP;
     TMP=gainTmp*gainTmp;
 
-	// Calcular sumatorios
+	// Calculate mean
 
     double sum2=gainTmp.sum();
-    double sum3=TMP.sum();
     double nPix=indice.sum();
+    double ave2 = sum2 / nPix;
 
-    cout << "npix     "<< nPix <<  endl;
-    cout << " total "<< dimX*dimY <<endl;
+    double sum3=TMP.sum();
 
-	//double sum2 = sum(gainTmp);
-	//double sum3 = sum(gainTmp.mul(gainTmp))[0];
-	//double nPix = sum(index)[0];
+    //cout << "npix 1    "<< nPix <<  endl;
+//    cout << " total "<< dimX*dimY <<endl;
+
 
 	// Eliminar elementos mas de 5-Sigma veces alejados de la media
-	double ave2 = sum2 / nPix;
-	cout<< "media y sma total   "<< ave2 << "  "<< sum2 << endl;
 
-	double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
+	ImageValDouble TMP2;
+	TMP2=gainTmp-ave2;
+	TMP2=TMP2*TMP2;
+	double sum4=TMP2.sum();
+	sum4=sum4/nPix;
+	double fiveSigma=5*sqrt(sum4);
+
+	//double fiveSigma = 5 * sqrt((sum3 / nPix) - ave2 * ave2);
+	cout<< "media y suma total y    "<< ave2 << "  "<< sum2 << endl;
 	cout<< "cinco sigma   "<< fiveSigma << endl;
+
 	//Recalculo el ind
 	valarray<double> G ;
-	G=(abs(gainTmp - ave2) <= fiveSigma);
-	//valarray<double> indice2=indice;
-    indice=G*indice;
-	//ImageValDouble G=abs(gainTmp - ave2);
+	int npix=criba(gainTmp, ave2, fiveSigma);
+	nPix=nPix-npix;
+	sum2=gainTmp.sum();
+	ave2=sum2/nPix;
 
+	//G=(abs(gainTmp - ave2) <= fiveSigma);
+//	cout << "minimo G   "<< G.min() <<"   "<< G.max() <<endl;
+//	//valarray<double> indice2=indice;
+//    //indice=G*indice;
+//	//ImageValDouble G=abs(gainTmp - ave2);
+//    ImageValChar pixx2=escalado8(indice);
+//    cout  << "idex.........." << endl;
+//    pinta(pixx2,dimX,dimY,2);
+//
 
 	cout << "minimo ind  "<< G.min() <<"   "<< G.max() <<endl;
 
 	//waitKey(0);
 	//index.convertTo(index, CV_64F);
-    TMP=gainTmp*indice;
-    sum2=TMP.sum();
-    nPix=indice.sum();
+//    TMP=gainTmp*indice;
+//    sum2=TMP.sum();
+//    nPix=indice.sum();
 
-  //  cout << "npix     "<< nPix <<  endl;
+   //cout << "npix     "<< nPix <<  endl;
     //cout << " ind.sum()   "<< ind.sum() <<endl;
 	//sum2 = sum2 - sum(gainTmp.mul(index))[0];
 	//nPix = nPix - sum(index)[0];
 
 	// Normalizar la tabla de ganancias
-	ave2 = sum2 / nPix;
+	//ave2 = sum2 / nPix;
 
 	gainTmp = gainTmp - ave2;
 
