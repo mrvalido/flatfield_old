@@ -1,19 +1,20 @@
 #include "utility.hpp"
 
 
-ImageValDouble log_10(ImageValInt val){
+ImageValDouble log_10(ImageValInt& val){
 	double ret;
 	int size_val = val.size();
 
 	ImageValDouble tmp(0.0,size_val);
 	for(int i=0; i < size_val; i++){
-		if(val[i]==0)
-			val[i]=1;
-		ret = log((double)val[i]);
-
-		//ret = max(ret,(double)0);
-
-		ret =ret / log(10.0);
+		//		if(val[i]==0)
+		//			val[i]=1;
+		//		ret = log((double)val[i]);
+		//		//ret = max(ret,(double)0);
+		//		ret =ret / log(10.0);
+		if(val[i]>0){
+			ret =log((double)val[i]) / log(10.0);
+		}
 		tmp[i] = ret;
 	}
 
@@ -22,13 +23,14 @@ ImageValDouble log_10(ImageValInt val){
 
 ImageValDouble Max(const ImageValDouble& val,double x){
 	int size_val = val.size();
-	ImageValDouble tmp(size_val);
-	tmp=val;
+	ImageValDouble tmp(0.0,size_val);
+
 
 	for(int i=0; i < size_val; i++){
-
 		if (val[i] < x)
 			tmp[i]=x;
+		else
+			tmp[i]=val[i];
 
 	}
 	return tmp;

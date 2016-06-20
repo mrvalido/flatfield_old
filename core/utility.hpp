@@ -17,7 +17,7 @@ typedef valarray<double>		 ImageValDouble;
 
 
 
-ImageValDouble log_10(ImageValInt val);
+ImageValDouble log_10(ImageValInt& val);
 ImageValDouble Max(const ImageValDouble& val,double x);
 ImageValDouble Min(const ImageValDouble& val,double x);
 ImageValDouble toDouble(const ImageValChar& val);

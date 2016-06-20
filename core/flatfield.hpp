@@ -18,7 +18,8 @@
 #include <cmath>
 #include "utility.hpp"
 
-#define no_of_image 9
+//#define no_of_image 9
+#define no_of_image 16
 #define dimX					2048
 #define dimY					2048
 #define ind( y, x ) ( y*dimX+x )
@@ -48,9 +49,12 @@ ImageValDouble ROI(const valarray<T>& val, int dx, int dy);
 template <typename T>
 void sumROI(valarray<T>& val, const valarray<T>& ROI, int dx, int dy);
 
-unsigned char toUchart( double n );
-int criba(ImageValDouble& val, double aver, double fiveSigma);
 
+void normalicer(ImageValDouble&, ImageValDouble&);
+void criba_zero(ImageValDouble& GTmp,ImageValDouble& pixCnt2);
+ImageValDouble media(ImageValDouble& GTmp,ImageValDouble& pixCnt2);
+ImageValDouble criba_fivesigma(ImageValDouble& val, double aver2, double fiveSigma);
+ImageValDouble flatfield(ImageValDouble& val,const ImageValShort& tmp );
 
 ImageValDouble getConst(vector<ImageValInt>& data,
 		const ImageValShort& tmp,\
