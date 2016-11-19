@@ -9,6 +9,10 @@ int Ancho;
 ImageValChar masciq(dimX*dimY);//creada para debug
 ImageValChar mascir(dimX*dimY);//creada para debug
 
+
+
+
+
 ImageValInt readImageFit(string nombreImagen){
 
 	std::auto_ptr<FITS> pInfile(new FITS(nombreImagen,Read,true));
@@ -21,7 +25,7 @@ ImageValInt readImageFit(string nombreImagen){
 	// read all user-specifed, coordinate, and checksum keys in the image
 	image.readAllKeys();
 	image.read(contents);
-
+    cout<< "datos de imagen"<< image<<endl;
 	int size_val = contents.size();
 	ImageValInt im(size_val);
 
@@ -30,7 +34,6 @@ ImageValInt readImageFit(string nombreImagen){
 	}
 	return im;
 }
-
 /*************************************************************/
 /**
  * this Function  writes image in fit file
@@ -190,11 +193,14 @@ ImageValChar escalado8(const ImageValShort& val){
 ImageValChar escalado8(const ImageValInt& val){
 	int size_val = val.size();
 	ImageValChar temp(size_val);
-
-	unsigned int mx = val.max();
+	ImageValInt val2=val;
+	int minimo=val2.min();
+		val2=val2-minimo;
+		//int maximo=contents.max();
+	 int mx = val2.max();
 
 	for(int i = 0; i < size_val; i++){
-		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
+		temp[i] = (unsigned char) (( (float)(val2[i])/(float)mx ) * 255.0);
 	}
 
 	return temp;
@@ -712,4 +718,3 @@ ImageValDouble iterate(const ImageValDouble& con, \
 	return flat;
 
 }
-

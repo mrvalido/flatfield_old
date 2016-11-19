@@ -18,10 +18,16 @@
 #include <cmath>
 #include "utility.hpp"
 
-//#define no_of_image 9
-#define no_of_image 16
+
+#define no_of_image 9
+//#define no_of_image 16
 #define dimX					2048
 #define dimY					2048
+
+//#define dimX					1080 //Test SolarC
+//#define dimY					1080
+//#define dimX					1024 //dimension imagenes HRT de prueba
+//#define dimY					1024
 #define ind( y, x ) ( y*dimX+x )
 
 using namespace cv;
@@ -30,6 +36,7 @@ using namespace CCfits;
 
 
 ImageValInt readImageFit(string nombreImagen);
+
 //template <typename T>
 int writeImage(ImageValDouble val,string fileName,long bitPix);
 void Mask(ImageValInt& data, ImageValShort& tmp,  const int iMin, const int iMax, int index);
@@ -76,3 +83,4 @@ ImageValDouble iterate(const ImageValDouble& con, \
 
 
 #endif
+
